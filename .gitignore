@@ -1,0 +1,48 @@
+# Python bytecode und Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtuelle Umgebungen
+venv/
+env/
+ENV/
+.venv/
+
+# IDE und Editor Dateien
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Betriebssystem-Dateien
+.DS_Store
+Thumbs.db
+
+# Logs und temporäre Dateien
+*.log
+*.tmp
+
+# Umgebungsvariablen-Datei (Passwörter etc.)
+.env
+.env.*
+
+# Datenbankdateien (lokale SQLite)
+*.sqlite3
+
+# Pytest cache
+.pytest_cache/
+
+# Mypy cache
+.mypy_cache/
+
+# Coverage Reports
+htmlcov/
+.coverage
+.coverage.*
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+
+# Docker
+docker-compose.override.yml
