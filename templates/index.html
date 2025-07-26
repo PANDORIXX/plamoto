@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PLAMOTO</title>
+    <link rel="icon" type="image/svg" href="{{ url_for('static', filename='webapp/icon.svg') }}">
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background-color: #f4f6f8;
+        font-family: 'Segoe UI', sans-serif;
+      }
+
+      .card {
+        border-radius: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .img-fluid {
+        border-radius: 12px;
+      }
+
+      .status {
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+
+      .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1.1rem;
+      }
+
+      /* Logo styling */
+      .header-logo {
+        height: 100px;
+        margin-right: 15px;
+      }
+
+      .header-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container py-5">
+      <div class="row mb-4">
+        <div class="col text-center">
+          <div class="header-container">
+            <img
+              src="{{ url_for('static', filename='webapp/logo_textless.svg') }}"
+              alt="PLAMOTO Logo"
+              class="header-logo"
+            />
+            <h1 class="display-4 mb-0">PLAMOTO</h1>
+          </div>
+          <p class="text-muted">Simple and automated plant monitoring</p>
+        </div>
+      </div>
+
+      <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+          <div class="card p-4">
+            {% if latest_image %}
+              <h5 class="text-center mb-3">📷 Latest captured image</h5>
+              <img
+                src="{{ url_for('static', filename='images/' + latest_image) }}"
+                class="img-fluid mx-auto d-block"
+                alt="Latest plant image"
+              />
+            {% else %}
+              <p class="text-center text-danger">❌ No images available.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center text-center mb-4">
+        <div class="col-md-4 mb-2">
+          <a
+            href="{{ url_for('capture') }}"
+            class="btn btn-success btn-lg w-100"
+            >📸 Capture new image</a
+          >
+        </div>
+        <div class="col-md-4 mb-2">
+          <a
+            href="{{ url_for('toggle_background_capture') }}"
+            class="btn btn-war
