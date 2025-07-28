@@ -3,10 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# Virtuelle Umgebungen
-venv/
-env/
-ENV/
+# Virtuelle Umgebung
 .venv/
 
 # IDE und Editor Dateien
@@ -49,3 +46,6 @@ docker-compose.override.yml
 
 # Pictures
 *.jpg
+
+# Settings
+settings.json

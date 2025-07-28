@@ -60,7 +60,10 @@
               />
               <div>
                 <h1 class="display-4 mb-1">PLAMOTO</h1>
-                <p class="text-muted mb-0">Simple and automated plant monitoring</p>
+                <p class="text-muted mb-0">
+                  Simple and automated plant monitoring |
+                  <a href="{{ url_for('settings') }}">⚙️</a>
+                </p>
               </div>
             </div>
           </div>
@@ -71,14 +74,14 @@
         <div class="col-md-8">
           <div class="card p-4">
             {% if latest_image %}
-              <h5 class="text-center mb-3">📷 Latest captured image</h5>
+              <h5 class="text-center mb-3">Latest captured image</h5>
               <img
                 src="{{ url_for('static', filename='images/' + latest_image) }}"
                 class="img-fluid mx-auto d-block"
                 alt="Latest plant image"
               />
             {% else %}
-              <p class="text-center text-danger">❌ No images available.</p>
+              <p class="text-center text-danger">No images available.</p>
             {% endif %}
           </div>
         </div>
@@ -89,14 +92,14 @@
           <a
             href="{{ url_for('capture') }}"
             class="btn btn-success btn-lg w-100"
-            >📸 Capture new image</a
+            >Capture new image</a
           >
         </div>
         <div class="col-md-4 mb-2">
           <a
             href="{{ url_for('toggle_background_capture') }}"
             class="btn btn-warning btn-lg w-100"
-            >🔄 Toggle background capture</a
+            >Toggle background capture</a
           >
         </div>
       </div>
@@ -106,12 +109,12 @@
           <div id="background_capture_status" class="status">
             {% if background_capture_active %}
               <span class="text-success"
-                >✅ Background capture active – next image in
+                >Background capture active – next image in
                 {{ background_capture_next_in }} minutes.</span
               >
             {% else %}
               <span class="text-danger"
-                >⛔ Background capture is currently off.</span
+                >Background capture is currently off.</span
               >
             {% endif %}
           </div>

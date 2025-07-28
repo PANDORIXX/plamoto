@@ -1,41 +1,41 @@
-from flask import Flask, render_template, redirect, url_for
-from camera import droidcam_capture_image, picam_capture_image, picam_test_capturing
+from flask import Flask, render_template, redirect, url_for, request
+from camera import droidcam_capture_image, picam_capture_image
 import threading
 import logging
 from logging.handlers import RotatingFileHandler
 import os
 import time
+import json
 
-# Create logger
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+SETTINGS_FILE = 'settings.json'
+IMAGE_DIR = 'static/images'
+LOG_FILE = 'logs/plant_monitor.log'
+BACKGROUND_CAPTURE_INTERVAL = 60 * 60
 
-# Create RotatingFileHandler with formatter
-file_handler = RotatingFileHandler('logs/plant_monitor.log', maxBytes=1024*1024, backupCount=2)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
+# Function to load current settings out of json
+def load_settings():
+    try:
+        with open(SETTINGS_FILE, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {'camera_source': 'droidcam'}
 
-# Create StreamHandler (console)
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(formatter)
-
-# Add handlers to the logger
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
-# Flask application to serve the camera images and capture new images
-app = Flask(__name__)
+# Function to save changes to the settings to json
+def save_settings(settings):
+    with open(SETTINGS_FILE, 'w') as f:
+        json.dump(settings, f, indent=2)
 
 # Function to capture image according the currently selected camera source
 def capture_image():
-    if camera_source == 'droidcam':
+    settings = app.config['SETTINGS']
+    if settings.get('camera_source') == 'droidcam':
         droidcam_capture_image()
     else:
         picam_capture_image()
 
 # Background thread for capturing images at regular intervals
 class BackgroundCaptureThread(threading.Thread):
-    def __init__(self, interval=60*60):
+    def __init__(self, interval=BACKGROUND_CAPTURE_INTERVAL):
         super().__init__()
         self.interval = interval
         self._stop_event = threading.Event()
@@ -52,25 +52,63 @@ class BackgroundCaptureThread(threading.Thread):
     def stop(self):
         self._stop_event.set()
 
+# Create logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Create RotatingFileHandler with formatter
+file_handler = RotatingFileHandler(LOG_FILE, maxBytes=1024*1024, backupCount=2)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Create StreamHandler (console)
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+
+# Add handlers to the logger
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
+
+# Flask application to serve the camera images and capture new images
+app = Flask(__name__)
+
+# Initialize app config
+app.config['SETTINGS'] = load_settings()
+app.config['BACKGROUND_CAPTURE_THREAD'] = None
+
 # Landing page with latest image
 @app.route('/')
 def index():
-    image_dir = 'static/images'
-    images = sorted(os.listdir(image_dir), reverse=True)
+    images = sorted(os.listdir(IMAGE_DIR), reverse=True)
     latest_image = images[0] if images else None
-    if background_capture_thread and background_capture_thread.is_running:
-        background_capture_next_in = int(max(0, background_capture_thread.next_capture_time - time.time())/60)
+    if app.config['BACKGROUND_CAPTURE_THREAD'] and app.config['BACKGROUND_CAPTURE_THREAD'].is_running:
+        background_capture_next_in = int(max(0, app.config['BACKGROUND_CAPTURE_THREAD'].next_capture_time - time.time())/60)
         return render_template('index.html', latest_image=latest_image, background_capture_active=True, background_capture_next_in=background_capture_next_in)
     else:
         return render_template('index.html', latest_image=latest_image, background_capture_active=False, background_capture_next_in=None)
-    
-# Link to switch the camera modes
-@app.route('/switch_camera_source')
-def switch_camera_source():
-    if camera_source == 'droidcam':
-        camera_source = 'picam'
-    else:
-        camera_source = 'droidcam'
+
+
+# Link to settings page
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    if request.method == 'POST':
+        # Read values from form
+        camera_source = request.form.get('camera_source')
+        picam_resolution = request.form.get('picam_resolution', '1280x720')
+
+        # Save to settings file
+        new_settings = {
+            'camera_source': camera_source,
+            'picam_resolution': picam_resolution
+        }
+        save_settings(new_settings)
+        app.config['SETTINGS'] = new_settings
+
+        return redirect(url_for('settings'))  # Reload page with new values
+
+    # For GET request – load settings to show in form
+    current_settings = load_settings()
+    return render_template('settings.html', **current_settings)
 
 # Link to capture a new image
 @app.route('/capture')
@@ -81,26 +119,16 @@ def capture():
 # Link to toggle background capture
 @app.route('/toggle_background_capture')
 def toggle_background_capture():
-    global background_capture_thread
-    if background_capture_thread and background_capture_thread.is_alive():
-        logging.info("Stopping background capture thread.")
-        background_capture_thread.stop()
-        background_capture_thread = None
+    if app.config['BACKGROUND_CAPTURE_THREAD'] and app.config['BACKGROUND_CAPTURE_THREAD'].is_alive():
+        logging.info('Stopping background capture thread.')
+        app.config['BACKGROUND_CAPTURE_THREAD'].stop()
+        app.config['BACKGROUND_CAPTURE_THREAD'] = None
     else:
-        logging.info("Starting background capture thread.")
-        background_capture_thread = BackgroundCaptureThread()
-        background_capture_thread.start()
+        logging.info('Starting background capture thread.')
+        app.config['BACKGROUND_CAPTURE_THREAD'] = BackgroundCaptureThread()
+        app.config['BACKGROUND_CAPTURE_THREAD'].start()
     time.sleep(2)
     return redirect(url_for('index'))
-        
-@app.route('/test_camera_settings')
-def test_camera_settings():
-    picam_test_capturing()
-    return redirect(url_for('index'))
-
-# Initialize variables
-background_capture_thread = None
-camera_source = 'droidcam'
 
 # Main
 if __name__ == '__main__':
