@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for
-from camera import capture_image
+from camera import droidcam_capture_image, picam_capture_image, picam_test_capturing
 import threading
 import logging
 from logging.handlers import RotatingFileHandler
@@ -25,6 +25,13 @@ logger.addHandler(console_handler)
 
 # Flask application to serve the camera images and capture new images
 app = Flask(__name__)
+
+# Function to capture image according the currently selected camera source
+def capture_image():
+    if camera_source == 'droidcam':
+        droidcam_capture_image()
+    else:
+        picam_capture_image()
 
 # Background thread for capturing images at regular intervals
 class BackgroundCaptureThread(threading.Thread):
@@ -56,6 +63,14 @@ def index():
         return render_template('index.html', latest_image=latest_image, background_capture_active=True, background_capture_next_in=background_capture_next_in)
     else:
         return render_template('index.html', latest_image=latest_image, background_capture_active=False, background_capture_next_in=None)
+    
+# Link to switch the camera modes
+@app.route('/switch_camera_source')
+def switch_camera_source():
+    if camera_source == 'droidcam':
+        camera_source = 'picam'
+    else:
+        camera_source = 'droidcam'
 
 # Link to capture a new image
 @app.route('/capture')
@@ -78,8 +93,14 @@ def toggle_background_capture():
     time.sleep(2)
     return redirect(url_for('index'))
         
+@app.route('/test_camera_settings')
+def test_camera_settings():
+    picam_test_capturing()
+    return redirect(url_for('index'))
+
 # Initialize variables
 background_capture_thread = None
+camera_source = 'droidcam'
 
 # Main
 if __name__ == '__main__':

@@ -49,18 +49,21 @@
     </style>
   </head>
   <body>
-    <div class="container py-5">
-      <div class="row mb-4">
-        <div class="col text-center">
-          <div class="header-container">
-            <img
-              src="{{ url_for('static', filename='webapp/logo_textless.svg') }}"
-              alt="PLAMOTO Logo"
-              class="header-logo"
-            />
-            <h1 class="display-4 mb-0">PLAMOTO</h1>
+      <div class="container py-5">
+        <div class="row mb-4 justify-content-center">
+          <div class="col-auto">
+            <div class="header-container d-flex align-items-center">
+              <img
+                src="{{ url_for('static', filename='webapp/logo_textless.svg') }}"
+                alt="PLAMOTO Logo"
+                class="header-logo"
+              />
+              <div>
+                <h1 class="display-4 mb-1">PLAMOTO</h1>
+                <p class="text-muted mb-0">Simple and automated plant monitoring</p>
+              </div>
+            </div>
           </div>
-          <p class="text-muted">Simple and automated plant monitoring</p>
         </div>
       </div>
 
@@ -92,4 +95,28 @@
         <div class="col-md-4 mb-2">
           <a
             href="{{ url_for('toggle_background_capture') }}"
-            class="btn btn-war
+            class="btn btn-warning btn-lg w-100"
+            >🔄 Toggle background capture</a
+          >
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+          <div id="background_capture_status" class="status">
+            {% if background_capture_active %}
+              <span class="text-success"
+                >✅ Background capture active – next image in
+                {{ background_capture_next_in }} minutes.</span
+              >
+            {% else %}
+              <span class="text-danger"
+                >⛔ Background capture is currently off.</span
+              >
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
