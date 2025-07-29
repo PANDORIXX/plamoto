@@ -1,37 +1,16 @@
 from flask import Flask, render_template, redirect, url_for, request
-from camera import droidcam_capture_image, picam_capture_image
+from camera import capture_image
+from settings import load_settings, save_settings
 import threading
 import logging
 from logging.handlers import RotatingFileHandler
 import os
 import time
-import json
 
 SETTINGS_FILE = 'settings.json'
 IMAGE_DIR = 'static/images'
 LOG_FILE = 'logs/plant_monitor.log'
 BACKGROUND_CAPTURE_INTERVAL = 60 * 60
-
-# Function to load current settings out of json
-def load_settings():
-    try:
-        with open(SETTINGS_FILE, 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {'camera_source': 'droidcam'}
-
-# Function to save changes to the settings to json
-def save_settings(settings):
-    with open(SETTINGS_FILE, 'w') as f:
-        json.dump(settings, f, indent=2)
-
-# Function to capture image according the currently selected camera source
-def capture_image():
-    settings = app.config['SETTINGS']
-    if settings.get('camera_source') == 'droidcam':
-        droidcam_capture_image()
-    else:
-        picam_capture_image()
 
 # Background thread for capturing images at regular intervals
 class BackgroundCaptureThread(threading.Thread):
@@ -46,7 +25,7 @@ class BackgroundCaptureThread(threading.Thread):
         self.is_running = True
         while not self._stop_event.is_set():
             self.next_capture_time = time.time() + self.interval
-            capture_image()
+            capture_image(app.config['SETTINGS'])
             time.sleep(self.interval)
 
     def stop(self):
@@ -73,7 +52,7 @@ logger.addHandler(console_handler)
 app = Flask(__name__)
 
 # Initialize app config
-app.config['SETTINGS'] = load_settings()
+app.config['SETTINGS'] = load_settings(SETTINGS_FILE)
 app.config['BACKGROUND_CAPTURE_THREAD'] = None
 
 # Landing page with latest image
@@ -94,26 +73,32 @@ def settings():
     if request.method == 'POST':
         # Read values from form
         camera_source = request.form.get('camera_source')
-        picam_resolution = request.form.get('picam_resolution', '1280x720')
+        droidcam_ip = request.form.get('droidcam_ip')
+        droidcam_port = request.form.get('droidcam_port')
+        picam_awb_mode = request.form.get('picam_awb_mode')
+        logging.info(f'Values sucessfully read from settings form.')
 
         # Save to settings file
         new_settings = {
             'camera_source': camera_source,
-            'picam_resolution': picam_resolution
+            'droidcam_ip': droidcam_ip,
+            'droidcam_port': droidcam_port,
+            'picam_awb_mode': picam_awb_mode
         }
-        save_settings(new_settings)
+        save_settings(SETTINGS_FILE, new_settings)
         app.config['SETTINGS'] = new_settings
+        logging.info('Settings saved and applied.')
 
         return redirect(url_for('settings'))  # Reload page with new values
 
     # For GET request – load settings to show in form
-    current_settings = load_settings()
+    current_settings = load_settings(SETTINGS_FILE)
     return render_template('settings.html', **current_settings)
 
 # Link to capture a new image
 @app.route('/capture')
 def capture():
-    capture_image()
+    capture_image(app.config['SETTINGS'])
     return redirect(url_for('index'))
 
 # Link to toggle background capture

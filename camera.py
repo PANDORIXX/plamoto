@@ -10,6 +10,14 @@ try:
 except ImportError:
     Picamera2 = None
 
+# Function to capture image according the currently selected camera source
+def capture_image(settings):
+    if settings.get('camera_source') == 'droidcam':
+        droidcam_capture_image(settings.get('droidcam_ip'), settings.get('droidcam_port'))
+    else:
+        picam_capture_image(settings.get('picam_awb_mode'))
+
+# Function to capture image with droidcam
 def droidcam_capture_image(ip, port):
     try:
         # URL of the DroidCam MJPEG stream (adjust if necessary)
@@ -43,7 +51,8 @@ def droidcam_capture_image(ip, port):
     except Exception as e:
         logging.error(f'Error capturing image: {e}')
         return None
-    
+
+# Function to capture image with picam on raspberry pi
 def picam_capture_image(awb_mode):
     try:
         # Initialize the camera
