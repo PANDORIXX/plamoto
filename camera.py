@@ -4,76 +4,114 @@ import os
 import cv2
 import time
 
-# This should only be used on Raspberry Pi with Picamera2 installed
+# Attempt to import Picamera2 (only available on Raspberry Pi)
 try:
     from picamera2 import Picamera2
 except ImportError:
+    # If import fails, set Picamera2 to None (camera not available)
     Picamera2 = None
 
-# Function to capture image according the currently selected camera source
+
 def capture_image(settings):
+    """
+    Capture an image based on the current camera source setting.
+    Calls either the DroidCam or Picamera capture function.
+    """
     if settings.get('camera_source') == 'droidcam':
         droidcam_capture_image(settings.get('droidcam_ip'), settings.get('droidcam_port'))
     else:
         picam_capture_image(settings.get('picam_awb_mode'))
 
-# Function to capture image with droidcam
+
 def droidcam_capture_image(ip, port):
+    """
+    Capture an image from the DroidCam MJPEG stream using OpenCV.
+
+    Args:
+        ip (str): IP address of the DroidCam stream
+        port (str/int): Port of the DroidCam stream
+
+    Returns:
+        str or None: Path to saved image file or None on failure
+    """
     try:
-        # URL of the DroidCam MJPEG stream (adjust if necessary)
+        # Construct the MJPEG stream URL for DroidCam
         stream_url = f'http://{ip}:{port}/video'
 
-        # Open the stream using OpenCV
+        # Open the video stream using OpenCV's VideoCapture
         cap = cv2.VideoCapture(stream_url)
 
-        # Check if the stream is available
+        # Check if the stream was successfully opened
         if not cap.isOpened():
             logging.error('DroidCam stream could not be opened.')
             return None
 
-        # Read one frame from the stream
+        # Read one frame from the video stream
         ret, frame = cap.read()
+
+        # Release the VideoCapture resource immediately after reading
         cap.release()
 
+        # Check if the frame was successfully captured
         if not ret or frame is None:
             logging.error('Failed to capture image from DroidCam.')
             return None
 
-        # Create filename with timestamp
+        # Generate a filename with current timestamp: YYYYMMDD_HHMMSS
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filepath = os.path.join('static/images', f'image_{timestamp}.jpg')
 
-        # Save the image to disk
+        # Save the captured frame as a JPEG image
         cv2.imwrite(filepath, frame)
         logging.info(f'Image captured and saved to {filepath}')
+
         return filepath
 
     except Exception as e:
+        # Log any unexpected error during capture
         logging.error(f'Error capturing image: {e}')
         return None
 
-# Function to capture image with picam on raspberry pi
+
 def picam_capture_image(awb_mode):
+    """
+    Capture an image using the Raspberry Pi Picamera2 with specified AWB mode.
+
+    Args:
+        awb_mode (str): Auto White Balance mode for the camera
+
+    Returns:
+        str or None: Path to saved image file or None on failure
+    """
     try:
-        # Initialize the camera
+        # Initialize Picamera2 object
         picam = Picamera2()
+
+        # Configure the camera for still image capture with default settings
         picam.configure(picam.create_still_configuration())
-        picam.set_controls({'AwbMode': awb_mode}) 
+
+        # Set Auto White Balance mode control
+        picam.set_controls({'AwbMode': awb_mode})
+
+        # Start the camera and wait for it to stabilize
         picam.start()
         time.sleep(2)
 
-        # Capture the image
+        # Generate filename with current timestamp: YYYYMMDD_HHMMSS
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         filepath = f'static/images/image_{timestamp}.jpg'
+
+        # Capture still image to file
         picam.capture_file(filepath)
         logging.info(f'Image captured and saved to {filepath}')
-        
-        # Stop and close the camera
+
+        # Stop and release camera resources
         picam.stop()
         picam.close()
 
         return filepath
-    
+
     except Exception as e:
+        # Log any error during capture
         logging.error(f'Error capturing image: {e}')
         return None

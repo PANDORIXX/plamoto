@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Page title with a Jinja2 block for dynamic titles -->
+  <title>PLAMOTO - {% block title %}{% endblock %}</title>
+
+  <!-- Favicon for the browser tab -->
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='webapp/favicon.ico') }}">
+
+  <!-- Bootstrap CSS from CDN for styling and responsive layout -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons CDN for vector icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* Base font and background color for the whole page */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f6f8;
+    }
+
+    /* Sidebar styling: fixed vertical menu on the left */
+    .sidebar {
+      height: 100vh; /* full viewport height */
+      position: fixed; /* stays fixed during scroll */
+      top: 0;
+      left: 0;
+      width: 220px;
+      background-color: #e6f4ea; /* pastel green */
+      color: #333333;
+      padding-top: 2rem;
+      transition: transform 0.3s ease; /* smooth slide effect */
+      z-index: 1030; /* above main content */
+    }
+
+    /* Sidebar links: block display and black text */
+    .sidebar a {
+      color: #000000;
+      display: block;
+      padding: 0.75rem 1.5rem;
+      text-decoration: none;
+    }
+
+    /* Hover and active states for sidebar links: highlight with green and border */
+    .sidebar a:hover, .sidebar a.active {
+      background-color: #a3c39a;
+      border-left: 4px solid #44aa00;
+    }
+
+    /* Main content area styling with padding and initial margin */
+    .main-content {
+      margin-left: 0;
+      padding: 2rem;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Responsive behavior for small screens (below 768px) */
+    @media (max-width: 767.98px) {
+      /* Sidebar hidden by default by translating it out of viewport */
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      /* Show sidebar when the 'show' class is added */
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      /* Main content should always take full width on mobile */
+      .main-content {
+        margin-left: 0 !important;
+      }
+
+      /* Mobile navbar with higher z-index to appear on top */
+      .mobile-nav {
+        z-index: 1040;
+      }
+    }
+
+    /* Card styling with rounded corners and subtle shadow */
+    .card {
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Images get rounded corners */
+    .img-fluid {
+      border-radius: 12px;
+    }
+
+    /* Status text styling */
+    .status {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    /* Logo height fixed for consistent header */
+    .header-logo {
+      height: 100px;
+    }
+
+    /* Styling the background capture toggle switch when checked */
+    #backgroundCaptureSwitch:checked {
+      background-color: #44aa00;
+      border-color: #44aa00;
+    }
+    
+    /* Utility class to hide elements */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+
+  <!-- Block to add extra content into the <head> from child templates -->
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+
+  <!-- Mobile navbar with toggle button, only visible on small screens -->
+  <nav class="navbar navbar-light bg-transparent d-md-none mobile-nav px-3">
+    <button class="btn btn-outline-secondary" id="sidebarToggle" aria-label="Toggle Sidebar">
+      <!-- Hamburger icon from Bootstrap Icons -->
+      <i class="bi bi-list" id="toggleIcon" style="font-size: 1.5rem;"></i>
+    </button>
+  </nav>
+
+  <!-- Sidebar navigation menu -->
+  <div class="sidebar" id="sidebar">
+    <div class="text-center mb-4">
+      <!-- Logo image at top of sidebar -->
+      <img src="{{ url_for('static', filename='webapp/logo.svg') }}" class="header-logo" alt="Logo">
+    </div>
+
+    <!-- Dashboard link; 'active' class added if current page matches -->
+    <a href="{{ url_for('index') }}" class="{% if active_page == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-speedometer2 me-2"></i>Dashboard
+    </a>
+
+    <!-- Settings link; 'active' class added if current page matches -->
+    <a href="{{ url_for('settings') }}" class="{% if active_page == 'settings' %}active{% endif %}">
+      <i class="bi bi-gear me-2"></i>Settings
+    </a>
+  </div>
+
+  <!-- Main content container where child templates inject their content -->
+  <div class="main-content">
+    {% block content %}{% endblock %}
+  </div>
+
+  <!-- JavaScript for toggling sidebar on mobile -->
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+      // Get references to toggle button, icon, sidebar, and overlay (if any)
+      const toggleButton = document.getElementById("sidebarToggle");
+      const toggleIcon = document.getElementById("toggleIcon");
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+
+      // Function to open sidebar: add class and change icon to "X"
+      function openSidebar() {
+        sidebar.classList.add("show");
+        toggleIcon.classList.replace("bi-list", "bi-x");
+        if (overlay) overlay.style.display = "block";
+      }
+
+      // Function to close sidebar: remove class and reset icon to hamburger
+      function closeSidebar() {
+        sidebar.classList.remove("show");
+        toggleIcon.classList.replace("bi-x", "bi-list");
+        if (overlay) overlay.style.display = "none";
+      }
+
+      // Toggle sidebar open or closed on button click
+      function toggleSidebar() {
+        if (sidebar.classList.contains("show")) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      }
+
+      // Attach event listener to toggle button if it exists
+      if (toggleButton) {
+        toggleButton.addEventListener("click", toggleSidebar);
+      }
+
+      // Close sidebar when a sidebar link is clicked on small screens
+      document.querySelectorAll('.sidebar a').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth < 768) {
+            closeSidebar();
+          }
+        });
+      });
+
+      // Close sidebar if clicking on overlay (if implemented)
+      if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
+      }
+  });
+  </script>
+
+  <!-- Block to add extra scripts from child templates -->
+  {% block scripts %}{% endblock %}
+</body>
+</html>
