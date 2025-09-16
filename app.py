@@ -9,60 +9,16 @@ import re
 import shutil
 from config import Config
 from logger_setup import setup_logger
+from background_capture import start_background_thread, stop_background_thread, compute_next_in_minutes
 
 # -------------------------------
-# Background capture thread
+# Logging setup
 # -------------------------------
-class BackgroundCaptureThread(threading.Thread):
-    """Thread that schedules background captures at a fixed minute interval."""
+logger = setup_logger(__name__)
 
-    def __init__(self, interval_minutes: int):
-        super().__init__(daemon=True)
-        self.interval_min = max(1, int(interval_minutes))  # safety: >= 1 minute
-        self.interval_s = self.interval_min * 60
-        self._stop_event = threading.Event()
-        self.next_capture_time = None  # epoch seconds of next scheduled capture
-        self.is_running = False
-
-    def run(self):
-        self.is_running = True
-
-        try:
-            # Capture immediately
-            capture_image(app.config['SETTINGS'])
-
-            # Shedule next capture
-            now = time.time()
-            self.next_capture_time = now + self.interval_s
-
-            while not self._stop_event.is_set():
-                # Sleep until it's time to capture (supports precise countdown)
-                sleep_s = max(0.0, self.next_capture_time - time.time())
-                # Sleep in small chunks to be responsive to stop()
-                end_time = time.time() + sleep_s
-                while not self._stop_event.is_set() and time.time() < end_time:
-                    time.sleep(min(0.5, end_time - time.time()))
-
-                if self._stop_event.is_set():
-                    break
-
-                # Perform capture
-                capture_image(app.config['SETTINGS'])
-
-                # Schedule next
-                self.next_capture_time = time.time() + self.interval_s
-        finally:
-            self.is_running = False
-            # Leave next_capture_time as-is for last known schedule, or set None
-            # self.next_capture_time = None
-
-    def stop(self):
-        """Signal the thread to stop and return immediately."""
-        self._stop_event.set()
-
-    def reset_schedule_now(self):
-        """Reschedule next capture from 'now' (used after saving settings)."""
-        self.next_capture_time = time.time() + self.interval_s
+# Logging when Picamera2 is not available
+if Picamera2 is None: 
+    picam_unavailability_logging()
 
 # -------------------------------
 # Cloudflare setup
@@ -135,16 +91,6 @@ app.config.from_object(Config)
 
 # Load settings once at startup
 app.config['SETTINGS'] = load_settings(app.config['SETTINGS_FILE'])
-app.config['BACKGROUND_CAPTURE_THREAD'] = None
-
-# -------------------------------
-# Logging setup
-# -------------------------------
-logger = setup_logger(__name__)
-
-# Logging when Picamera2 is not available
-if Picamera2 is None: 
-    picam_unavailability_logging()
 
 # -------------------------------
 # Helpers
@@ -157,40 +103,6 @@ def get_interval_minutes_from_settings(settings: dict) -> int:
     except (ValueError, TypeError):
         return 60
 
-
-def start_background_thread():
-    """Start background capture thread using current settings."""
-    stop_background_thread(join=True)
-    interval_min = get_interval_minutes_from_settings(app.config['SETTINGS'])
-    t = BackgroundCaptureThread(interval_minutes=interval_min)
-    t.start()
-    app.config['BACKGROUND_CAPTURE_THREAD'] = t
-    logger.info(f"Background capture thread started (interval={interval_min} min).")
-
-
-def stop_background_thread(join: bool = True):
-    """Stop background capture thread if running."""
-    t = app.config.get('BACKGROUND_CAPTURE_THREAD')
-    if t and t.is_alive():
-        logger.info("Stopping background capture thread…")
-        t.stop()
-        if join:
-            t.join(timeout=5.0)
-        logger.info("Background capture thread stopped.")
-    app.config['BACKGROUND_CAPTURE_THREAD'] = None
-
-
-def compute_next_in_minutes(thread: BackgroundCaptureThread):
-    """Return remaining minutes (int) until next capture, or None if unknown."""
-    if not thread or not thread.is_running:
-        return None
-    nxt = thread.next_capture_time
-    if not nxt:
-        return None
-    seconds_left = max(0, nxt - time.time())
-    return int(seconds_left // 60)
-
-
 # -------------------------------
 # Routes
 # -------------------------------
@@ -199,25 +111,16 @@ def index():
     images = sorted(os.listdir(app.config['IMAGE_DIR']), reverse=True)
     latest_image = images[0] if images else None
 
-    thread = app.config.get('BACKGROUND_CAPTURE_THREAD')
-    if thread and thread.is_running:
-        next_in_min = compute_next_in_minutes(thread)
-        return render_template(
-            'dashboard.html',
-            active_page='dashboard',
-            latest_image=latest_image,
-            background_capture_active=True,
-            background_capture_next_in=next_in_min
-        )
-    else:
-        return render_template(
-            'dashboard.html',
-            active_page='dashboard',
-            latest_image=latest_image,
-            background_capture_active=False,
-            background_capture_next_in=None
-        )
+    next_in_min = compute_next_in_minutes()
+    background_active = next_in_min is not None
 
+    return render_template(
+        'dashboard.html',
+        active_page='dashboard',
+        latest_image=latest_image,
+        background_capture_active=background_active,
+        background_capture_next_in=next_in_min
+    )
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -248,16 +151,14 @@ def settings():
         logger.info('Settings saved and applied.')
 
         # If thread is running, update its schedule.
-        thread = app.config.get('BACKGROUND_CAPTURE_THREAD')
-        if thread and thread.is_running:
-            # If interval changed, restart the thread to apply new interval.
-            if thread.interval_min != background_capture_interval:
-                logger.info("Interval changed; restarting background capture thread with new interval.")
-                start_background_thread()
-            else:
-                # Only reschedule to prevent '0 minutes' display right after saving.
-                logger.info("Interval unchanged; resetting next capture schedule.")
-                thread.reset_schedule_now()
+        next_in_min = compute_next_in_minutes()
+        if next_in_min is not None:
+            interval_min = get_interval_minutes_from_settings(app.config['SETTINGS'])
+            # restart with new interval
+            start_background_thread(
+                settings_getter=lambda: app.config['SETTINGS'],
+                interval_minutes=interval_min
+            )
 
         return redirect(url_for('settings'))
 
@@ -265,37 +166,39 @@ def settings():
     current_settings = load_settings(app.config['SETTINGS_FILE'])
     return render_template('settings.html', **current_settings, active_page='settings')
 
-
 @app.route('/capture')
 def capture():
     capture_image(app.config['SETTINGS'])
     return redirect(url_for('index'))
 
-
 @app.route('/toggle_background_capture', methods=['POST'])
 def toggle_background_capture():
-    thread = app.config.get('BACKGROUND_CAPTURE_THREAD')
-    if thread and thread.is_alive() and thread.is_running:
+    if compute_next_in_minutes() is not None:
         stop_background_thread()
         active = False
         next_in = None
     else:
-        start_background_thread()
+        interval_min = get_interval_minutes_from_settings(app.config['SETTINGS'])
+        start_background_thread(lambda: app.config['SETTINGS'], interval_minutes=interval_min)
         active = True
-        next_in = get_interval_minutes_from_settings(app.config['SETTINGS'])
-
+        next_in = interval_min
     return jsonify({'active': active, 'next_in': next_in})
-
 
 @app.route('/background_capture_status')
 def background_capture_status():
-    thread = app.config.get('BACKGROUND_CAPTURE_THREAD')
-    if thread and thread.is_alive() and thread.is_running:
-        next_in = compute_next_in_minutes(thread)
-        return jsonify({'active': True, 'next_in': next_in})
-    else:
-        return jsonify({'active': False, 'next_in': None})
+    next_in_min = compute_next_in_minutes()
+    return jsonify({
+        'active': next_in_min is not None,
+        'next_in': next_in_min
+    })
 
+@app.route('/latest_image')
+def latest_image():
+    """Return the URL of the latest captured image."""
+    images = sorted(os.listdir(app.config['IMAGE_DIR']), reverse=True)
+    latest = images[0] if images else None
+    url = url_for('static', filename=f'images/{latest}') if latest else ''
+    return jsonify({'url': url})
 
 # -------------------------------
 # Main

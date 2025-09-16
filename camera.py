@@ -4,6 +4,9 @@ import cv2
 import time
 from logger_setup import setup_logger
 
+# -------------------------------
+# Logging setup
+# -------------------------------
 logger = setup_logger(__name__)
 
 # Attempt to import Picamera2 (only available on Raspberry Pi)
@@ -103,7 +106,13 @@ def picam_capture_image(awb_mode):
         filepath = f'static/images/image_{timestamp}.jpg'
 
         # Capture still image to file
-        picam.capture_file(filepath)
+        for attempt in range(3):
+            try:
+                picam.capture_file(filepath)
+                break
+            except Exception as e:
+                logger.error(f"Error capturing image (attempt {attempt+1}): {e}")
+                time.sleep(1)
         logger.info(f'Image captured and saved to {filepath}')
 
         # Stop and release camera resources
