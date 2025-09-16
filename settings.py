@@ -19,7 +19,7 @@ def load_settings(file):
         # If the file is not found, return default settings dictionary
         return {
             'background_capture_interval': '60',
-            'camera_source': 'droidcam',
+            'camera_source': 'picam',
             'droidcam_ip': '0.0.0.0',
             'droidcam_port': '0000',
             'picam_awb_mode': 1
