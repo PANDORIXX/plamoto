@@ -115,3 +115,8 @@ def picam_capture_image(awb_mode):
         # Log any error during capture
         logging.error(f'Error capturing image: {e}')
         return None
+
+def picam_unavailability_logging(): 
+    """Log that PiCamera2 is not available. Call this from main script after logger setup."""
+    logger = logging.getLogger(__name__)
+    logger.error("PiCam not available.")

@@ -1,5 +1,5 @@
 from flask import Flask, render_template, redirect, url_for, request, jsonify
-from camera import capture_image
+from camera import capture_image, picam_unavailability_logging, Picamera2
 from settings import load_settings, save_settings
 import threading
 import logging
@@ -146,6 +146,8 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
+if Picamera2 is None: 
+    picam_unavailability_logging()
 
 # -------------------------------
 # Flask app
