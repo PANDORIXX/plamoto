@@ -2,18 +2,13 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify
 from camera import capture_image, picam_unavailability_logging, Picamera2
 from settings import load_settings, save_settings
 import threading
-import logging
-from logging.handlers import RotatingFileHandler
 import os
 import time
 import subprocess
 import re
 import shutil
-
-SETTINGS_FILE = 'settings.json'
-IMAGE_DIR = 'static/images'
-LOG_FILE = 'logs/plant_monitor.log'
-
+from config import Config
+from logger_setup import setup_logger
 
 # -------------------------------
 # Background capture thread
@@ -131,33 +126,25 @@ def start_cloudflare_quick_tunnel(max_wait_sec=15):
     raise RuntimeError("Cloudflare Tunnel did not start in time or no URL was returned.")
 
 # -------------------------------
-# Logging setup
-# -------------------------------
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-file_handler = RotatingFileHandler(LOG_FILE, maxBytes=1024 * 1024, backupCount=2)
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
-
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(console_handler)
-
-if Picamera2 is None: 
-    picam_unavailability_logging()
-
-# -------------------------------
 # Flask app
 # -------------------------------
 app = Flask(__name__)
 
+# Load configuration constants
+app.config.from_object(Config)
+
 # Load settings once at startup
-app.config['SETTINGS'] = load_settings(SETTINGS_FILE)
+app.config['SETTINGS'] = load_settings(app.config['SETTINGS_FILE'])
 app.config['BACKGROUND_CAPTURE_THREAD'] = None
 
+# -------------------------------
+# Logging setup
+# -------------------------------
+logger = setup_logger(__name__)
+
+# Logging when Picamera2 is not available
+if Picamera2 is None: 
+    picam_unavailability_logging()
 
 # -------------------------------
 # Helpers
@@ -209,7 +196,7 @@ def compute_next_in_minutes(thread: BackgroundCaptureThread):
 # -------------------------------
 @app.route('/')
 def index():
-    images = sorted(os.listdir(IMAGE_DIR), reverse=True)
+    images = sorted(os.listdir(app.config['IMAGE_DIR']), reverse=True)
     latest_image = images[0] if images else None
 
     thread = app.config.get('BACKGROUND_CAPTURE_THREAD')
@@ -256,7 +243,7 @@ def settings():
             'picam_awb_mode': picam_awb_mode
         }
 
-        save_settings(SETTINGS_FILE, new_settings)
+        save_settings(app.config['SETTINGS_FILE'], new_settings)
         app.config['SETTINGS'] = new_settings
         logger.info('Settings saved and applied.')
 
@@ -275,7 +262,7 @@ def settings():
         return redirect(url_for('settings'))
 
     # GET: load settings for form
-    current_settings = load_settings(SETTINGS_FILE)
+    current_settings = load_settings(app.config['SETTINGS_FILE'])
     return render_template('settings.html', **current_settings, active_page='settings')
 
 

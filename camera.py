@@ -1,8 +1,10 @@
 from datetime import datetime
-import logging
 import os
 import cv2
 import time
+from logger_setup import setup_logger
+
+logger = setup_logger(__name__)
 
 # Attempt to import Picamera2 (only available on Raspberry Pi)
 try:
@@ -10,7 +12,6 @@ try:
 except ImportError:
     # If import fails, set Picamera2 to None (camera not available)
     Picamera2 = None
-
 
 def capture_image(settings):
     """
@@ -43,7 +44,7 @@ def droidcam_capture_image(ip, port):
 
         # Check if the stream was successfully opened
         if not cap.isOpened():
-            logging.error('DroidCam stream could not be opened.')
+            logger.error('DroidCam stream could not be opened.')
             return None
 
         # Read one frame from the video stream
@@ -54,7 +55,7 @@ def droidcam_capture_image(ip, port):
 
         # Check if the frame was successfully captured
         if not ret or frame is None:
-            logging.error('Failed to capture image from DroidCam.')
+            logger.error('Failed to capture image from DroidCam.')
             return None
 
         # Generate a filename with current timestamp: YYYYMMDD_HHMMSS
@@ -63,13 +64,13 @@ def droidcam_capture_image(ip, port):
 
         # Save the captured frame as a JPEG image
         cv2.imwrite(filepath, frame)
-        logging.info(f'Image captured and saved to {filepath}')
+        logger.info(f'Image captured and saved to {filepath}')
 
         return filepath
 
     except Exception as e:
         # Log any unexpected error during capture
-        logging.error(f'Error capturing image: {e}')
+        logger.error(f'Error capturing image: {e}')
         return None
 
 
@@ -103,7 +104,7 @@ def picam_capture_image(awb_mode):
 
         # Capture still image to file
         picam.capture_file(filepath)
-        logging.info(f'Image captured and saved to {filepath}')
+        logger.info(f'Image captured and saved to {filepath}')
 
         # Stop and release camera resources
         picam.stop()
@@ -113,10 +114,9 @@ def picam_capture_image(awb_mode):
 
     except Exception as e:
         # Log any error during capture
-        logging.error(f'Error capturing image: {e}')
+        logger.error(f'Error capturing image: {e}')
         return None
 
 def picam_unavailability_logging(): 
-    """Log that PiCamera2 is not available. Call this from main script after logger setup."""
-    logger = logging.getLogger(__name__)
+    """Log that PiCamera2 is not available."""
     logger.error("PiCam not available.")
