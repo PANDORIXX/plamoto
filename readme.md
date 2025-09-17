@@ -24,18 +24,19 @@ PLAMOTO is a web-based plant monitoring system designed for Raspberry Pi. It cap
 Clone the repository and set up a Python virtual environment:
 
 ```bash
-git clone https://github.com/<your-username>/plamoto.git
+git clone https://github.com/PANDORIXX/plamoto.git
 cd plamoto
-python -m venv .venv
-source .venv/bin/activate  # Linux/macOS
-.venv\Scripts\activate     # Windows
-pip install -r requirements.txt
 ```
 
-Edit `config.py` to configure:
-
-- `IMAGE_DIR` – Folder where captured images are stored
-- `SETTINGS_FILE` – Path for settings file
+Run the script for your system:
+- Linux/maxOS: 
+```bash
+./setup.sh
+```
+- Windows(CMD): 
+```bat
+setup.bat
+```
 
 ---
 
@@ -106,7 +107,7 @@ MIT License – see [LICENSE](LICENSE) file for details.
 
 ## Author
 
-Luca – Lead Developer & Maintainer
+PANDORIXX – Lead Developer & Maintainer
 
 ---
 
