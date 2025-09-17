@@ -9,6 +9,9 @@ from config import Config
 # -------------------------------
 logger = setup_logger(__name__)
 
+# -------------------------------
+# Background capture class with logic
+# -------------------------------
 _thread_instance = None
 
 class BackgroundCaptureThread(threading.Thread):

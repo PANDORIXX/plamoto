@@ -4,12 +4,8 @@ from settings import load_settings, save_settings, get_interval_minutes_from_set
 from config import Config
 from logging import setup_logger
 from background_capture import start_background_thread, stop_background_thread, compute_next_in_minutes
-import threading
+from external_access import start_cloudflare_quick_tunnel
 import os
-import time
-import subprocess
-import re
-import shutil
 
 # -------------------------------
 # Logging setup
@@ -19,67 +15,6 @@ logger = setup_logger(__name__)
 # Logging when Picamera2 is not available
 if Picamera2 is None: 
     picam_unavailability_logging()
-
-# -------------------------------
-# Cloudflare setup
-# -------------------------------
-def start_cloudflare_quick_tunnel(max_wait_sec=15):
-    """
-    Start a Cloudflare Quick Tunnel in a daemon thread.
-    Logs the public URL if successful, otherwise logs an error and raises RuntimeError.
-    """
-
-    # Check if cloudflared is installed
-    if not shutil.which("cloudflared"):
-        logger.error("cloudflared is not installed. Please install it first.")
-        raise RuntimeError("cloudflared is not installed. Please install it first.")
-
-    tunnel_info = {"url": None, "error": None}
-
-    def run_tunnel():
-        try:
-            process = subprocess.Popen(
-                ["cloudflared", "tunnel", "--url", "http://localhost:5000"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True
-            )
-
-            for line in process.stdout:
-                line = line.strip()
-                # Extract trycloudflare.com URL
-                match = re.search(r"https://[a-zA-Z0-9\-]+\.trycloudflare\.com", line)
-                if match:
-                    tunnel_info["url"] = match.group(0)
-                    break
-
-            if not tunnel_info["url"]:
-                # Read stderr as fallback for errors
-                tunnel_info["error"] = process.stderr.read().strip()
-
-            # Keep process running in background
-            process.wait()
-        except Exception as e:
-            tunnel_info["error"] = str(e)
-
-    # Run in daemon thread
-    thread = threading.Thread(target=run_tunnel, daemon=True)
-    thread.start()
-
-    # Wait a short time for URL to appear
-    start_time = time.time()
-    while time.time() - start_time < max_wait_sec:
-        if tunnel_info["url"]:
-            logger.info(f"Your app is publicly reachable at: {tunnel_info['url']}")
-            return tunnel_info["url"]
-        if tunnel_info["error"]:
-            logger.error(f"Cloudflare Tunnel failed: {tunnel_info['error']}")
-            raise RuntimeError(f"Cloudflare Tunnel failed: {tunnel_info['error']}")
-        time.sleep(0.2)
-
-    # Timeout
-    logger.error("Cloudflare Tunnel did not start in time or no URL was returned.")
-    raise RuntimeError("Cloudflare Tunnel did not start in time or no URL was returned.")
 
 # -------------------------------
 # Flask app
@@ -193,7 +128,7 @@ def latest_image():
 # Main
 # -------------------------------
 if __name__ == '__main__':
-    # Start Cloudflare Quick Tunnel
+    # Start Cloudflare Quick Tunnel for external network access
     start_cloudflare_quick_tunnel()
     
     # Start Flask app
