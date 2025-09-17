@@ -1,4 +1,4 @@
-# PLAMOTO – PLAnt MOniTOring
+# PLAMOTO – Plant Monitoring
 
 [![Python](https://img.shields.io/badge/python-3.11-blue)](https://www.python.org/)  
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
@@ -28,7 +28,7 @@ git clone https://github.com/PANDORIXX/plamoto.git
 cd plamoto
 ```
 
-Run the script for your system:
+Run the setup script for your system:
 - Linux/maxOS: 
 ```bash
 ./setup.sh
@@ -48,7 +48,7 @@ Start the web app:
 python app.py
 ```
 
-Open your browser at [http://localhost:5000](http://localhost:5000).
+Open your browser at [http://localhost:5000](http://localhost:5000) or with the created cloudflare quick tunnel url.
 
 ---
 
