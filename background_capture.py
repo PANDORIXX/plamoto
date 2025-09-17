@@ -1,7 +1,7 @@
 import threading
 import time
 from camera import capture_image
-from logger_setup import setup_logger
+from logging import setup_logger
 from config import Config
 
 # -------------------------------

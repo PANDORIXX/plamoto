@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 import cv2
 import time
-from logger_setup import setup_logger
+from logging import setup_logger
 
 # -------------------------------
 # Logging setup

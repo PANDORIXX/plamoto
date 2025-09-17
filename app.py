@@ -1,15 +1,15 @@
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from camera import capture_image, picam_unavailability_logging, Picamera2
-from settings import load_settings, save_settings
+from settings import load_settings, save_settings, get_interval_minutes_from_settings
+from config import Config
+from logging import setup_logger
+from background_capture import start_background_thread, stop_background_thread, compute_next_in_minutes
 import threading
 import os
 import time
 import subprocess
 import re
 import shutil
-from config import Config
-from logger_setup import setup_logger
-from background_capture import start_background_thread, stop_background_thread, compute_next_in_minutes
 
 # -------------------------------
 # Logging setup
@@ -91,17 +91,6 @@ app.config.from_object(Config)
 
 # Load settings once at startup
 app.config['SETTINGS'] = load_settings(app.config['SETTINGS_FILE'])
-
-# -------------------------------
-# Helpers
-# -------------------------------
-def get_interval_minutes_from_settings(settings: dict) -> int:
-    """Parse interval minutes from settings; fallback to 60 if missing/invalid."""
-    val = settings.get('background_capture_interval', 60)
-    try:
-        return max(1, int(val))
-    except (ValueError, TypeError):
-        return 60
 
 # -------------------------------
 # Routes

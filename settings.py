@@ -40,3 +40,11 @@ def save_settings(file, settings):
     # Open the file in write mode and write the JSON with indentation for readability
     with open(file, 'w') as f:
         json.dump(settings, f, indent=2)
+
+def get_interval_minutes_from_settings(settings: dict) -> int:
+    """Parse interval minutes from settings; fallback to 60 if missing/invalid."""
+    val = settings.get('background_capture_interval', 60)
+    try:
+        return max(1, int(val))
+    except (ValueError, TypeError):
+        return 60
