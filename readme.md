@@ -21,7 +21,7 @@ PLAMOTO is a web-based plant monitoring system designed for Raspberry Pi. It cap
 
 ## Installation
 
-Clone the repository and set up a Python virtual environment:
+Clone the repository and open it:
 
 ```bash
 git clone https://github.com/PANDORIXX/plamoto.git
