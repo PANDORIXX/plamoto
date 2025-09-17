@@ -30,41 +30,49 @@ python -m venv .venv
 source .venv/bin/activate  # Linux/macOS
 .venv\Scripts\activate     # Windows
 pip install -r requirements.txt
-Edit config.py to configure:
+```
 
-IMAGE_DIR – folder where captured images are stored
+Edit `config.py` to configure:
 
-SETTINGS_FILE – path for settings.json
+- `IMAGE_DIR` – Folder where captured images are stored
+- `SETTINGS_FILE` – Path for settings file
 
-Usage
+---
+
+## Usage
+
 Start the web app:
 
-bash
-Code kopieren
+```bash
 python app.py
-Open your browser at http://localhost:5000.
+```
 
-Dashboard
-Shows the latest captured image.
+Open your browser at [http://localhost:5000](http://localhost:5000).
 
-Displays background capture status and next scheduled capture.
+---
 
-Provides buttons to manually capture or toggle background capture.
+## Dashboard
 
-Settings
-Adjust via /settings:
+- Shows the latest captured image.
+- Displays background capture status and next scheduled capture.
+- Provides buttons to manually capture or toggle background capture.
 
-Camera Source: 'picam' or 'droidcam'
+---
 
-Background Capture Interval: Minutes between automatic captures
+## Settings
 
-DroidCam IP/Port: For DroidCam streaming
+Adjust via `/settings`:
 
-PiCam AWB Mode: Auto White Balance mode for Raspberry Pi Camera
+- **Camera Source:** `picam` or `droidcam`
+- **Background Capture Interval:** Minutes between automatic captures
+- **DroidCam IP/Port:** For DroidCam streaming
+- **PiCam AWB Mode:** Auto White Balance mode for Raspberry Pi Camera
 
-Project Structure
-php
-Code kopieren
+---
+
+## Project Structure
+
+```
 plamoto/
 ├── app.py                 # Main Flask application
 ├── camera.py              # Camera handling (Picamera2 & DroidCam)
@@ -76,25 +84,39 @@ plamoto/
 │   └── images/            # Captured images
 ├── templates/             # HTML templates for web interface
 └── requirements.txt       # Python dependencies
-Cloudflare Quick Tunnel (Optional)
+```
+
+---
+
+## Cloudflare Quick Tunnel (Optional)
+
 PLAMOTO can expose the local web app to the internet using Cloudflare Quick Tunnel:
 
-Automatically starts a daemon thread on app startup.
+- Automatically starts a daemon thread on app startup.
+- Logs the public URL once available.
+- Requires `cloudflared` installed on your Raspberry Pi.
 
-Logs the public URL once available.
+---
 
-Requires cloudflared installed on your Raspberry Pi.
+## License
 
-License
-MIT License – see LICENSE file for details.
+MIT License – see [LICENSE](LICENSE) file for details.
 
-Author
+---
+
+## Author
+
 Luca – Lead Developer & Maintainer
 
-Contributing
+---
+
+## Contributing
+
 Contributions are welcome! Please open issues or submit pull requests for new features, bug fixes, or improvements.
 
-Notes
-Tested on Raspberry Pi with Picamera2 and DroidCam streams.
+---
 
-Designed for Python 3.11+ and Flask.
+## Notes
+
+- Tested on Raspberry Pi with Picamera2 and DroidCam streams.
+- Designed for Python 3.11+ and Flask.
