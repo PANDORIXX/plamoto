@@ -1,5 +1,5 @@
 class Config: 
-    SETTINGS_FILE = 'settings.json'
+    SETTINGS_FILE = 'config/settings.json'
     IMAGE_DIR = 'static/images'
     LOG_FILE = 'logs/plant_monitor.log'
     FLASK_HOST = '0.0.0.0'

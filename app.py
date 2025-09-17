@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, jsonify
 from camera import capture_image, picam_unavailability_logging, Picamera2
-from settings import load_settings, save_settings, get_interval_minutes_from_settings
+from settings import load_settings, save_settings, get_interval_minutes_from_settings, parse_form_settings
 from config import Config
 from logging import setup_logger
 from background_capture import start_background_thread, stop_background_thread, compute_next_in_minutes
@@ -49,32 +49,13 @@ def index():
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     if request.method == 'POST':
-        # Read values from form (strings by default)
-        background_capture_interval = request.form.get('background_capture_interval')
-        camera_source = request.form.get('camera_source')
-        droidcam_ip = request.form.get('droidcam_ip')
-        droidcam_port = request.form.get('droidcam_port')
-        picam_awb_mode = request.form.get('picam_awb_mode')
-
-        # Sanitize interval (minutes)
-        try:
-            background_capture_interval = max(1, int(background_capture_interval))
-        except (ValueError, TypeError):
-            background_capture_interval = get_interval_minutes_from_settings(app.config['SETTINGS'])
-
-        new_settings = {
-            'background_capture_interval': int(background_capture_interval),
-            'camera_source': camera_source,
-            'droidcam_ip': droidcam_ip,
-            'droidcam_port': int(droidcam_port),
-            'picam_awb_mode': int(picam_awb_mode)
-        }
+        new_settings = parse_form_settings(request.form)
 
         save_settings(app.config['SETTINGS_FILE'], new_settings)
         app.config['SETTINGS'] = new_settings
         logger.info('Settings saved and applied.')
 
-        # If thread is running, update its schedule.
+        # If thread is running, update its schedule
         next_in_min = compute_next_in_minutes()
         if next_in_min is not None:
             interval_min = get_interval_minutes_from_settings(app.config['SETTINGS'])

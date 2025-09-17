@@ -67,7 +67,6 @@ class BackgroundCaptureThread(threading.Thread):
 # -------------------------------
 # Helpers
 # -------------------------------
-
 def start_background_thread(settings_getter, interval_minutes):
     """Start background capture thread using current settings."""
     global _thread_instance

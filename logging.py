@@ -2,6 +2,9 @@ import logging
 from logging.handlers import RotatingFileHandler
 from config import Config
 
+# -------------------------------
+# Logging setup
+# -------------------------------
 def setup_logger(name=None): 
     """Create and return a configured logger instance using Config."""
     if name is None: 

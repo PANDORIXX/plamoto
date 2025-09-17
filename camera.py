@@ -4,11 +4,6 @@ import cv2
 import time
 from logging import setup_logger
 
-# -------------------------------
-# Logging setup
-# -------------------------------
-logger = setup_logger(__name__)
-
 # Attempt to import Picamera2 (only available on Raspberry Pi)
 try:
     from picamera2 import Picamera2
@@ -16,6 +11,14 @@ except ImportError:
     # If import fails, set Picamera2 to None (camera not available)
     Picamera2 = None
 
+# -------------------------------
+# Logging setup
+# -------------------------------
+logger = setup_logger(__name__)
+
+# -------------------------------
+# Helpers
+# -------------------------------
 def capture_image(settings):
     """
     Capture an image based on the current camera source setting.
