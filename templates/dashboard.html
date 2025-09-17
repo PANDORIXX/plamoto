@@ -16,6 +16,7 @@
         <!-- Show latest image if available -->
         <h5 class="text-center mb-3">Latest image</h5>
         <img
+          id="latest-image"
           src="{{ url_for('static', filename='images/' + latest_image) }}"
           class="img-fluid mx-auto d-block"
           alt="Latest plant image"
@@ -63,6 +64,19 @@
     const toggleSwitch = document.getElementById("backgroundCaptureSwitch");
     const statusElem = document.getElementById("background_capture_status");
 
+    // Function to update the latest image
+    function updateLatestImage() {
+      fetch('/latest_image')
+          .then(response => response.json())
+          .then(data => {
+              const img = document.getElementById('latest-image');
+              if (img && data.url && img.src !== data.url) {
+                  img.src = data.url + '?t=' + new Date().getTime(); // Cache-Busting
+              }
+          })
+          .catch(err => console.error('Error fetching latest image:', err));
+    }
+
     // Function to fetch and update the background capture status from the server
     function updateStatus() {
       fetch("/background_capture_status")
@@ -84,8 +98,9 @@
     // Initial load of status on page load
     updateStatus();
 
-    // Update status automatically every 60 seconds
+    // Update status automatically every 60 seconds and latest image every 5 seconds
     setInterval(updateStatus, 60000);
+    setInterval(updateLatestImage, 5000)
 
     // Event listener for toggle switch changes, triggers backend toggle
     toggleSwitch.addEventListener("change", () => {

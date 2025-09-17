@@ -87,6 +87,7 @@ def picam_capture_image(awb_mode):
     Returns:
         str or None: Path to saved image file or None on failure
     """
+    picam = None
     try:
         # Initialize Picamera2 object
         picam = Picamera2()
@@ -115,16 +116,23 @@ def picam_capture_image(awb_mode):
                 time.sleep(1)
         logger.info(f'Image captured and saved to {filepath}')
 
-        # Stop and release camera resources
-        picam.stop()
-        picam.close()
-
         return filepath
 
     except Exception as e:
         # Log any error during capture
         logger.error(f'Error capturing image: {e}')
         return None
+    # Stop and release camera resources
+    finally: 
+        if picam: 
+            try:
+                picam.stop()
+            except Exception:
+                pass
+            try:
+                picam.close()
+            except Exception:
+                pass
 
 def picam_unavailability_logging(): 
     """Log that PiCamera2 is not available."""

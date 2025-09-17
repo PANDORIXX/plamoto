@@ -139,11 +139,11 @@ def settings():
             background_capture_interval = get_interval_minutes_from_settings(app.config['SETTINGS'])
 
         new_settings = {
-            'background_capture_interval': background_capture_interval,
+            'background_capture_interval': int(background_capture_interval),
             'camera_source': camera_source,
             'droidcam_ip': droidcam_ip,
-            'droidcam_port': droidcam_port,
-            'picam_awb_mode': picam_awb_mode
+            'droidcam_port': int(droidcam_port),
+            'picam_awb_mode': int(picam_awb_mode)
         }
 
         save_settings(app.config['SETTINGS_FILE'], new_settings)
