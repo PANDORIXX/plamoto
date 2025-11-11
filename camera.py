@@ -3,6 +3,7 @@ import os
 import cv2
 import time
 from logger import setup_logger
+import traceback
 
 # Attempt to import Picamera2 (only available on Raspberry Pi)
 try:
@@ -120,7 +121,9 @@ def picam_capture_image(awb_mode):
         logger.info(f'Image captured and saved to {filepath}')
 
         return filepath
-
+    except IndexError: 
+        logger.error("Error capturing image: No camera found. Is it connected?")
+        return None
     except Exception as e:
         # Log any error during capture
         logger.error(f'Error capturing image: {e}')

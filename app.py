@@ -46,6 +46,15 @@ def index():
         background_capture_next_in=next_in_min
     )
 
+@app.route('/plants')
+def plants():
+    return render_template('plants.html', active_page='plants')
+
+@app.route('/gallery')
+def gallery():
+    images = sorted(os.listdir(app.config['IMAGE_DIR']), reverse=True)
+    return render_template('gallery.html', active_page='gallery', images=images)
+
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     if request.method == 'POST':
@@ -110,7 +119,7 @@ def latest_image():
 # -------------------------------
 if __name__ == '__main__':
     # Start Cloudflare Quick Tunnel for external network access
-    start_cloudflare_quick_tunnel()
+    # start_cloudflare_quick_tunnel()
     
     # Start Flask app
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

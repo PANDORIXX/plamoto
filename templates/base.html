@@ -138,6 +138,16 @@
       <i class="bi bi-speedometer2 me-2"></i>Dashboard
     </a>
 
+    <!-- Plant library link; 'active' class added if current page matches -->
+    <a href="{{ url_for('plants') }}" class="{% if active_page == 'plants' %}active{% endif %}">
+      <i class="bi bi-book me-2"></i>Plants
+    </a>
+
+    <!-- Picture collection link; 'active' class added if current page matches -->
+    <a href="{{ url_for('gallery') }}" class="{% if active_page == 'gallery' %}active{% endif %}">
+      <i class="bi bi-collection me-2"></i>Gallery
+    </a>
+
     <!-- Settings link; 'active' class added if current page matches -->
     <a href="{{ url_for('settings') }}" class="{% if active_page == 'settings' %}active{% endif %}">
       <i class="bi bi-gear me-2"></i>Settings

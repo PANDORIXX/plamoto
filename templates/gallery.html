@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Gallery{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="mb-4 text-center">
+    <h1 class="display-5">Gallery</h1>
+</div>
+
+<!-- Card with all pictures captured-->
+<div class="row justify-content-center mb-5">
+    <div class="col-md-10">
+        <div class="card p-4">
+            <div class="row">
+                <!-- Loop through images and display them -->
+                {% for image in images if image.endswith(('.jpg')) %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="{{ url_for('static', filename='images/' ~ image) }}" class="card-img-top img-fluid" alt="Captured Image">
+                        <div class="card-body">
+                            <p class="card-text text-center">{{ image }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
