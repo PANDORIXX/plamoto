@@ -47,13 +47,13 @@ def index():
     )
 
 @app.route('/plants')
-def plant_library():
-    return render_template('plant_library.html', active_page='plant_library')
+def plants():
+    return render_template('plants.html', active_page='plants')
 
 @app.route('/gallery')
-def picture_collection():
+def gallery():
     images = sorted(os.listdir(app.config['IMAGE_DIR']), reverse=True)
-    return render_template('picture_collection.html', active_page='picture_collection', images=images)
+    return render_template('gallery.html', active_page='gallery', images=images)
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
