@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify
 from camera import capture_image, picam_unavailability_logging, Picamera2
 from settings import load_settings, save_settings, get_interval_minutes_from_settings, parse_form_settings
 from config import Config
-from logging import setup_logger
+from logger import setup_logger
 from background_capture import start_background_thread, stop_background_thread, compute_next_in_minutes
 from external_access import start_cloudflare_quick_tunnel
 import os
@@ -45,6 +45,15 @@ def index():
         background_capture_active=background_active,
         background_capture_next_in=next_in_min
     )
+
+@app.route('/plants')
+def plant_library():
+    return render_template('plant_library.html', active_page='plant_library')
+
+@app.route('/gallery')
+def picture_collection():
+    images = sorted(os.listdir(app.config['IMAGE_DIR']), reverse=True)
+    return render_template('picture_collection.html', active_page='picture_collection', images=images)
 
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
@@ -110,7 +119,7 @@ def latest_image():
 # -------------------------------
 if __name__ == '__main__':
     # Start Cloudflare Quick Tunnel for external network access
-    start_cloudflare_quick_tunnel()
+    # start_cloudflare_quick_tunnel()
     
     # Start Flask app
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)

@@ -3,7 +3,7 @@ import threading
 import time
 import re
 import shutil
-from logging import setup_logger
+from logger import setup_logger
 
 # -------------------------------
 # Logging setup
