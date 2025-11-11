@@ -3,7 +3,6 @@ import os
 import cv2
 import time
 from logger import setup_logger
-import traceback
 
 # Attempt to import Picamera2 (only available on Raspberry Pi)
 try:
