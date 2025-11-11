@@ -2,7 +2,7 @@ from flask import Flask, render_template, redirect, url_for, request, jsonify
 from camera import capture_image, picam_unavailability_logging, Picamera2
 from settings import load_settings, save_settings, get_interval_minutes_from_settings, parse_form_settings
 from config import Config
-from logging import setup_logger
+from logger import setup_logger
 from background_capture import start_background_thread, stop_background_thread, compute_next_in_minutes
 from external_access import start_cloudflare_quick_tunnel
 import os

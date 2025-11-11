@@ -2,7 +2,7 @@ from datetime import datetime
 import os
 import cv2
 import time
-from logging import setup_logger
+from logger import setup_logger
 
 # Attempt to import Picamera2 (only available on Raspberry Pi)
 try:
