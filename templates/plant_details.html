@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if plant %}Edit Plant{% else %}Add Plant{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Page header -->
+<div class="mb-4 text-center">
+  <h1 class="display-5">
+    {% if plant %}Edit Plant{% else %}Add Plant{% endif %}
+  </h1>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-3">
+    <div class="card p-4">
+      <form method="POST" action="{{ form_action }}">
+        <div class="mb-3">
+          <label for="name" class="form-label">Name</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="name" name="name"
+                   placeholder="Ficus Elastica"
+                   value="{{ plant.name if plant else '' }}"
+                   required>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="location" class="form-label">Location</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="location" name="location"
+                   placeholder="Living Room"
+                   value="{{ plant.location if plant else '' }}">
+          </div>
+        </div>
+
+        <button type="submit" class="btn custom-btn">
+          {% if plant %}Save Changes{% else %}Add Plant{% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

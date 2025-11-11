@@ -10,52 +10,49 @@
 
 <!-- Card displaying the latest image -->
 <div class="row justify-content-center mb-5">
-  <div class="col-md-8">
+  <div class="col-md-10">
     <div class="card p-4">
-      {% if latest_image %}
-        <!-- Show latest image if available -->
-        <h5 class="text-center mb-3">Latest image</h5>
-        <img
-          id="latest-image"
-          src="{{ url_for('static', filename='images/' + latest_image) }}"
-          class="img-fluid mx-auto d-block"
-          alt="Latest plant image"
-        />
-        <div class="mt-3 text-center">
-          <!-- Button to capture a new image -->
-          <a href="{{ url_for('capture') }}" class="btn btn-success" style="background-color:#c1ddc1; border:none; color:#000;">
-            Capture new image
-          </a>
+      <div class="row">
+        {% if latest_image %}
+          <!-- Show latest image if available -->
+          <h5 class="text-center mb-3">Latest image</h5>
+          <img
+            id="latest-image"
+            src="{{ url_for('static', filename='images/' + latest_image) }}"
+            class="img-fluid mx-auto d-block"
+            alt="Latest plant image"
+          />
+        {% else %}
+          <!-- Message if no images exist yet -->
+          <p class="text-center text-danger">No images available.</p>
+        {% endif %}
+      </div>
+      <!-- Button to capture a new image -->
+      <a href="{{ url_for('capture') }}" class="btn custom-btn mt-4">Capture new image</a>
+
+      <!-- Toggle switch for background capture and its status -->
+      <div class="d-flex justify-content-between align-items-center mt-4">
+        <h5 class="mb-0">Background capture</h5>
+        <div class="form-check form-switch d-flex align-items-center gap-3 mb-0">
+          <!-- Checkbox for toggling background capture; checked if active -->
+          <input class="form-check-input" type="checkbox" id="backgroundCaptureSwitch" {% if background_capture_active %}checked{% endif %}>
+          <label class="form-check-label fw-semibold mb-0" for="backgroundCaptureSwitch">
+            <div id="background_capture_status" class="status">
+              {% if background_capture_active %}
+                <span class="text-success">
+                  On – next image in {{ background_capture_next_in }} minutes
+                </span>
+              {% else %}
+                <span class="text-danger">Off</span>
+              {% endif %}
+            </div>
+          </label>
         </div>
-      {% else %}
-        <!-- Message if no images exist yet -->
-        <p class="text-center text-danger">No images available.</p>
-      {% endif %}
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Toggle switch for background capture and its status -->
-<div class="row justify-content-center mb-4">
-  <div class="col-md-8 text-center">
-    <h5 class="text-center mb-3">Background capture</h5>
-    <div class="form-check form-switch d-inline-flex align-items-center gap-3">
-      <!-- Checkbox for toggling background capture; checked if active -->
-      <input class="form-check-input" type="checkbox" id="backgroundCaptureSwitch" {% if background_capture_active %}checked{% endif %}>
-      <label class="form-check-label fw-semibold" for="backgroundCaptureSwitch">
-        <div id="background_capture_status" class="status mt-2">
-          {% if background_capture_active %}
-            <span class="text-success">
-              On – next image in {{ background_capture_next_in }} minutes
-            </span>
-          {% else %}
-            <span class="text-danger">Off</span>
-          {% endif %}
-        </div>
-      </label>
-    </div>
-  </div>
-</div>
 {% endblock %}
 
 {% block scripts %}

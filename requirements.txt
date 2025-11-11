@@ -1,4 +1,30 @@
-Flask>=2.3.0
-opencv-python>=4.8.0
-picamera2; platform_system=="Linux"
-numpy>=1.26.0
+# Core Flask
+Flask==3.0.3
+Werkzeug==3.0.3
+Jinja2==3.1.4
+itsdangerous==2.2.0
+click==8.1.7
+
+# Database & ORM
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.32
+psycopg2-binary==2.9.9  # PostgreSQL connector
+
+# Migrations
+Flask-Migrate==4.0.7
+alembic==1.13.3
+
+# Environment variables
+python-dotenv==1.0.1
+
+# Utilities (optional, but common)
+requests==2.32.3
+Pillow==10.4.0          # For image handling in your plant monitor
+opencv-python==4.10.0.84  # For background detection, etc.
+numpy==2.1.2
+
+# Logging and scheduling (optional)
+apscheduler==3.10.4
+
+# Testing (optional)
+pytest==8.3.3

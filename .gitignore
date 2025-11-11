@@ -8,9 +8,6 @@ __pycache__/
 
 # IDE und Editor Dateien
 .vscode/
-.idea/
-*.sublime-project
-*.sublime-workspace
 
 # Betriebssystem-Dateien
 .DS_Store
@@ -22,27 +19,10 @@ Thumbs.db
 
 # Umgebungsvariablen-Datei (Passwörter etc.)
 .env
-.env.*
+*.env
 
-# Datenbankdateien (lokale SQLite)
-*.sqlite3
-
-# Pytest cache
-.pytest_cache/
-
-# Mypy cache
-.mypy_cache/
-
-# Coverage Reports
-htmlcov/
-.coverage
-.coverage.*
-
-# Jupyter Notebook Checkpoints
-.ipynb_checkpoints/
-
-# Docker
-docker-compose.override.yml
+# Flask migrations
+migrations/
 
 # Pictures
 *.jpg
