@@ -21,7 +21,8 @@
                             <h5 class="card-title">{{ plant.name }}</h5>
                             <p class="card-text mb-2">Location: {{ plant.location }}</p>
                         </div>
-                        <div class="card-footer bg-transparent border-0 d-flex justify-content-between">                            <!-- Edit button (left) -->
+                        <div class="card-footer bg-transparent border-0 d-flex justify-content-between">                            
+                            <!-- Edit button (left) -->
                             <a href="{{ url_for('edit_plant', plant_id=plant.id) }}" class="btn btn-secondary">Edit</a>
 
                             <!-- Delete button (right) -->

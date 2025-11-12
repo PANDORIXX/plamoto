@@ -19,8 +19,13 @@
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <img src="{{ url_for('static', filename='images/' ~ image) }}" class="card-img-top img-fluid" alt="Captured Image">
-                        <div class="card-body">
-                            <p class="card-text text-center">{{ image }}</p>
+                        <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center">
+                            <!-- Image filename (left) -->
+                            <p class="card-text text-left mb-0">{{ image }}</p>
+                            <!-- Delete button (right) -->
+                            <form action="{{ url_for('remove_picture', filename='images/' ~ image) }}" method="POST" style="margin:0;">
+                                <button type="submit" class="btn custom-btn-danger">Delete</button>
+                            </form>
                         </div>
                     </div>
                 </div>

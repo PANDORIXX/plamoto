@@ -163,6 +163,16 @@ def gallery():
     images = sorted(os.listdir(app.config['IMAGE_DIR']), reverse=True)
     return render_template('gallery.html', active_page='gallery', images=images)
 
+@app.route('/remove_picture/<path:filename>', methods=['POST'])
+def remove_picture(filename):
+    file_path = os.path.join(app.root_path, 'static', filename)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        flash(f"Image '{os.path.basename(filename)}' deleted successfully!", "success")
+    else:
+        flash(f"Image '{os.path.basename(filename)}' not found!", "error")
+    return redirect(url_for('gallery'))
+
 @app.route('/settings', methods=['GET', 'POST'])
 def settings():
     if request.method == 'POST':
@@ -193,7 +203,8 @@ def settings():
 # -------------------------------
 if __name__ == '__main__':
     # Start Cloudflare Quick Tunnel for external network access
-    # start_cloudflare_quick_tunnel()
+    if app.config['CLOUDFLARE_ENABLED']:
+        start_cloudflare_quick_tunnel()
     
     # Start Flask app
     app.run(host='0.0.0.0', port=5000, debug=app.config['DEBUG'])
