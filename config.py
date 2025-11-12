@@ -19,11 +19,11 @@ class Config:
     # Database configuration
     SQLALCHEMY_DATABASE_URI = os.getenv(
         "DATABASE_URL", 
-        "postgresql+psycopg2://plamoto_user:plamoto_pass@localhost:5432/plamoto_db"
+        "postgresql+psycopg2://plamoto_user:plamoto_pass@localhost:5432/plamoto_db" # Change as needed
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # General settings
     BACKGROUND_CAPTURE_MIN_INTERVAL = 1
-    DEBUG = True
-    CLOUDFLARE_ENABLED = False
+    DEBUG = False
+    CLOUDFLARE_ENABLED = True

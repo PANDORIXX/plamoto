@@ -3,123 +3,45 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<!-- Page header -->
 <div class="mb-4 text-center">
   <h1 class="display-5">Dashboard</h1>
 </div>
 
-<!-- Card displaying the latest image -->
 <div class="row justify-content-center mb-5">
   <div class="col-md-10">
     <div class="card p-4">
-      <div class="row">
+      <div class="row text-center">
+        <h5 class="mb-3">Latest image</h5>
         {% if latest_image %}
-          <!-- Show latest image if available -->
-          <h5 class="text-center mb-3">Latest image</h5>
-          <img
-            id="latest-image"
-            src="{{ url_for('static', filename='images/' + latest_image) }}"
-            class="img-fluid mx-auto d-block"
-            alt="Latest plant image"
-          />
+          <img id="latest-image" src="{{ latest_image }}" class="img-fluid mx-auto" alt="Latest plant image" />
         {% else %}
-          <!-- Message if no images exist yet -->
-          <p class="text-center text-danger">No images available.</p>
+          <img id="latest-image" src="{{ url_for('static', filename='images/default.png') }}" class="img-fluid mx-auto" alt="No images available" />
+          <p class="text-danger mt-2">No images available.</p>
         {% endif %}
       </div>
-      <!-- Button to capture a new image -->
-      <a href="{{ url_for('capture') }}" class="btn custom-btn mt-4">Capture new image</a>
 
-      <!-- Toggle switch for background capture and its status -->
-      <div class="d-flex justify-content-between align-items-center mt-4">
-        <h5 class="mb-0">Background capture</h5>
-        <div class="form-check form-switch d-flex align-items-center gap-3 mb-0">
-          <!-- Checkbox for toggling background capture; checked if active -->
-          <input class="form-check-input" type="checkbox" id="backgroundCaptureSwitch" {% if background_capture_active %}checked{% endif %}>
-          <label class="form-check-label fw-semibold mb-0" for="backgroundCaptureSwitch">
-            <div id="background_capture_status" class="status">
-              {% if background_capture_active %}
-                <span class="text-success">
-                  On – next image in {{ background_capture_next_in }} minutes
-                </span>
-              {% else %}
-                <span class="text-danger">Off</span>
-              {% endif %}
-            </div>
-          </label>
+      <div class="mt-4 text-center">
+        <a href="{{ url_for('capture') }}" class="btn custom-btn"><i class="bi bi-camera me-1"></i>Capture</a>
+      </div>
+
+      <div class="card p-3 mt-4 mx-auto" style="max-width: 300px;">
+        <div class="d-flex justify-content-between align-items-center gap-3 mb-2">
+          <h5 class="mb-0">Background Capture</h5>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="backgroundCaptureSwitch">
+          </div>
+        </div>
+
+        <div class="progress position-relative" style="height: 30px;">
+          <div id="background_capture_progress" class="progress-bar {% if background_capture_active %}bg-custom-active{% else %}bg-custom-inactive{% endif %}" role="progressbar" style="width: 0%;"></div>
+          <span id="background_capture_text" class="position-absolute w-100 text-center fw-bold" style="line-height: 30px;"></span>
         </div>
       </div>
     </div>
   </div>
 </div>
-
 {% endblock %}
 
 {% block scripts %}
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const toggleSwitch = document.getElementById("backgroundCaptureSwitch");
-    const statusElem = document.getElementById("background_capture_status");
-
-    // Function to update the latest image
-    function updateLatestImage() {
-      fetch('/latest_image')
-          .then(response => response.json())
-          .then(data => {
-              const img = document.getElementById('latest-image');
-              if (img && data.url && img.src !== data.url) {
-                  img.src = data.url + '?t=' + new Date().getTime(); // Cache-Busting
-              }
-          })
-          .catch(err => console.error('Error fetching latest image:', err));
-    }
-
-    // Function to fetch and update the background capture status from the server
-    function updateStatus() {
-      fetch("/background_capture_status")
-        .then(response => response.json())
-        .then(data => {
-          if (data.active) {
-            toggleSwitch.checked = true;
-            statusElem.innerHTML = `<span class="text-success">
-              On – next image in ${data.next_in} minutes
-            </span>`;
-          } else {
-            toggleSwitch.checked = false;
-            statusElem.innerHTML = `<span class="text-danger">Off</span>`;
-          }
-        })
-        .catch(err => console.error("Failed to fetch background capture status:", err));
-    }
-
-    // Initial load of status on page load
-    updateStatus();
-
-    // Update status automatically every 60 seconds and latest image every 5 seconds
-    setInterval(updateStatus, 60000);
-    setInterval(updateLatestImage, 5000)
-
-    // Event listener for toggle switch changes, triggers backend toggle
-    toggleSwitch.addEventListener("change", () => {
-      fetch("/toggle_background_capture", { method: "POST" })
-        .then(response => response.json())
-        .then(data => {
-          if (data.active) {
-            toggleSwitch.checked = true;
-            statusElem.innerHTML = `<span class="text-success">
-              On – next image in ${data.next_in} minutes
-            </span>`;
-          } else {
-            toggleSwitch.checked = false;
-            statusElem.innerHTML = `<span class="text-danger">Off</span>`;
-          }
-        })
-        .catch(error => {
-          // Revert toggle state on error and log it
-          console.error("Error toggling background capture:", error);
-          toggleSwitch.checked = !toggleSwitch.checked;
-        });
-    });
-  });
-</script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 {% endblock %}

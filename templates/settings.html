@@ -8,9 +8,9 @@
   <h1 class="display-5">Settings</h1>
 </div>
 
-<div class="row justify-content-center">
-  <div class="col-md-3">
-    <div class="card p-4">
+<div class="row justify-content-center mb-5">
+  <div class="col-md-5">
+    <div class="card p-4 shadow-sm">
       <form method="POST" action="{{ url_for('settings') }}">
         <!-- General settings section -->
         <div id="general-settings" class="mb-4">
@@ -18,8 +18,17 @@
           <div class="mb-3">
             <label for="background_capture_interval" class="form-label">Background capture interval</label>
             <div class="input-group">
-              <!-- Input for background capture interval in minutes -->
-              <input type="number" class="form-control" id="background_capture_interval" name="background_capture_interval" placeholder="Time" aria-label="Time" value="{{ background_capture_interval }}" min="1" step="1">
+              <input
+                type="number"
+                class="form-control"
+                id="background_capture_interval"
+                name="background_capture_interval"
+                placeholder="Time"
+                aria-label="Time"
+                value="{{ background_capture_interval }}"
+                min="1"
+                step="1"
+              >
               <span class="input-group-text">minutes</span>
             </div>
           </div>
@@ -28,42 +37,80 @@
         <!-- Camera source selection -->
         <div class="mb-4">
           <label class="form-label fw-bold">Camera Source</label>
-          <div class="form-check">
-            <!-- Radio button for PiCam -->
-            <input class="form-check-input" type="radio" name="camera_source" id="picam" value="picam" {% if camera_source == 'picam' %}checked{% endif %}>
+          <div class="form-check mb-2">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="camera_source"
+              id="picam"
+              value="picam"
+              {% if camera_source == 'picam' %}checked{% endif %}
+            >
             <label class="form-check-label" for="picam">PiCam</label>
           </div>
           <div class="form-check">
-            <!-- Radio button for DroidCam -->
-            <input class="form-check-input" type="radio" name="camera_source" id="droidcam" value="droidcam" {% if camera_source == 'droidcam' %}checked{% endif %}>
+            <input
+              class="form-check-input"
+              type="radio"
+              name="camera_source"
+              id="droidcam"
+              value="droidcam"
+              {% if camera_source == 'droidcam' %}checked{% endif %}
+            >
             <label class="form-check-label" for="droidcam">DroidCam</label>
           </div>
         </div>
 
-        <!-- DroidCam specific settings, hidden by default -->
+        <!-- DroidCam specific settings -->
         <div id="droidcam-settings" class="mb-4 hidden">
           <label class="form-label fw-bold">DroidCam Settings</label>
           <div class="mb-3">
             <label for="droidcam_ip" class="form-label">Stream IP</label>
-            <input type="text" class="form-control" id="droidcam_ip" name="droidcam_ip" value="{{ droidcam_ip }}">
+            <input
+              type="text"
+              class="form-control"
+              id="droidcam_ip"
+              name="droidcam_ip"
+              placeholder="e.g., 192.168.0.10"
+              value="{{ droidcam_ip }}"
+            >
           </div>
           <div class="mb-3">
             <label for="droidcam_port" class="form-label">Stream Port</label>
-            <input type="number" class="form-control" id="droidcam_port" name="droidcam_port" value="{{ droidcam_port }}" min="0" max="65535" step="1">
+            <input
+              type="number"
+              class="form-control"
+              id="droidcam_port"
+              name="droidcam_port"
+              placeholder="4747"
+              value="{{ droidcam_port }}"
+              min="0"
+              max="65535"
+              step="1"
+            >
           </div>
         </div>
 
-        <!-- PiCam specific settings, hidden by default -->
+        <!-- PiCam specific settings -->
         <div id="picam-settings" class="mb-4 hidden">
           <label class="form-label fw-bold">PiCam Settings</label>
           <div class="mb-3">
-            <label for="picam_awb_mode" class="form-label">AWB-Mode (Automatic White Balancing)</label>
-            <input type="number" class="form-control" id="picam_awb_mode" name="picam_awb_mode" value="{{ picam_awb_mode }}">
+            <label for="picam_awb_mode" class="form-label">AWB Mode (Auto White Balance)</label>
+            <input
+              type="text"
+              class="form-control"
+              id="picam_awb_mode"
+              name="picam_awb_mode"
+              placeholder="e.g., auto"
+              value="{{ picam_awb_mode }}"
+            >
           </div>
         </div>
 
         <!-- Save button -->
-        <button type="submit" class="btn custom-btn">Save Settings</button>
+        <div class="text-center">
+          <button type="submit" class="btn custom-btn"><i class="bi bi-save me-1"></i>Save Settings</button>
+        </div>
       </form>
     </div>
   </div>
@@ -71,29 +118,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-  // Get references to radio buttons and settings sections
-  const droidcamRadio = document.getElementById('droidcam');
-  const picamRadio = document.getElementById('picam');
-  const droidcamSettings = document.getElementById('droidcam-settings');
-  const picamSettings = document.getElementById('picam-settings');
-
-  // Function to toggle visibility of camera-specific settings
-  function toggleSettings() {
-    if (droidcamRadio.checked) {
-      droidcamSettings.classList.remove('hidden');
-      picamSettings.classList.add('hidden');
-    } else if (picamRadio.checked) {
-      picamSettings.classList.remove('hidden');
-      droidcamSettings.classList.add('hidden');
-    }
-  }
-
-  // Initialize visibility on page load
-  toggleSettings();
-
-  // Add event listeners to radio buttons to toggle settings on change
-  droidcamRadio.addEventListener('change', toggleSettings);
-  picamRadio.addEventListener('change', toggleSettings);
-</script>
+  <script src="{{ url_for('static', filename='js/settings.js') }}"></script>
 {% endblock %}

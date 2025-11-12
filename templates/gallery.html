@@ -3,36 +3,63 @@
 {% block title %}Gallery{% endblock %}
 
 {% block content %}
-
 <!-- Page header -->
 <div class="mb-4 text-center">
-    <h1 class="display-5">Gallery</h1>
+  <h1 class="display-5">Gallery</h1>
 </div>
 
-<!-- Card with all pictures captured-->
+<!-- Gallery card -->
 <div class="row justify-content-center mb-5">
-    <div class="col-md-10">
-        <div class="card p-4">
-            <div class="row">
-                <!-- Loop through images and display them -->
-                {% for image in images if image.endswith(('.jpg')) %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100">
-                        <img src="{{ url_for('static', filename='images/' ~ image) }}" class="card-img-top img-fluid" alt="Captured Image">
-                        <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center">
-                            <!-- Image filename (left) -->
-                            <p class="card-text text-left mb-0">{{ image }}</p>
-                            <!-- Delete button (right) -->
-                            <form action="{{ url_for('remove_picture', filename='images/' ~ image) }}" method="POST" style="margin:0;">
-                                <button type="submit" class="btn custom-btn-danger">Delete</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
-</div>
+  <div class="col-md-10">
+    <div class="card p-4">
+      {% if images %}
+        <div class="row g-4">
+          <!-- Loop through available images -->
+          {% for image in images if image.endswith('.jpg') %}
+          <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="card h-100 shadow-sm">
+              <!-- Image preview -->
+              <img 
+                src="{{ url_for('static', filename='images/' ~ image) }}" 
+                class="card-img-top img-fluid"
+                alt="Captured image {{ loop.index }}"
+                loading="lazy"
+              >
 
+              <!-- Footer with filename and delete button -->
+              <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center">
+                <p class="mb-0 text-truncate" title="{{ image }}">{{ image }}</p>
+                <form 
+                  action="{{ url_for('remove_picture', filename='images/' ~ image) }}" 
+                  method="POST" 
+                  style="margin:0;"
+                >
+                  <button 
+                    type="submit" 
+                    class="btn btn-sm custom-btn-danger"
+                    title="Delete this image"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <!-- No images fallback -->
+        <div class="text-center py-4">
+          <img 
+            src="{{ url_for('static', filename='images/default.png') }}" 
+            alt="No images available"
+            class="img-fluid mb-3" 
+            style="max-width: 200px;"
+          >
+          <p class="text-muted">No images available yet. Capture one on the Dashboard.</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
 {% endblock %}
