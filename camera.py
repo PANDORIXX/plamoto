@@ -3,6 +3,8 @@ import os
 import cv2
 import time
 from logger import setup_logger
+from extensions import db
+from models import PlantImage
 
 # Attempt to import Picamera2 (only available on Raspberry Pi)
 try:
@@ -19,15 +21,36 @@ logger = setup_logger(__name__)
 # -------------------------------
 # Helpers
 # -------------------------------
-def capture_image(settings):
+def capture_image(settings, plant_id=None):
     """
     Capture an image based on the current camera source setting.
     Calls either the DroidCam or Picamera capture function.
+
+    Args:
+        settings (dict): Camera settings
+        plant_id (int, optional): ID of the plant to associate the image with
+
+    Returns:
+        str or None: Path to saved image file or None on failure
     """
     if settings.get('camera_source') == 'droidcam':
-        droidcam_capture_image(settings.get('droidcam_ip'), settings.get('droidcam_port'))
+        filepath = droidcam_capture_image(settings.get('droidcam_ip'), settings.get('droidcam_port'))
     else:
-        picam_capture_image(settings.get('picam_awb_mode'))
+        filepath = picam_capture_image(settings.get('picam_awb_mode'))
+
+    # If capture was successful and plant_id is provided, save to database
+    if filepath and plant_id:
+        try:
+            # Create PlantImage record
+            plant_image = PlantImage(plant_id=plant_id, image_path=filepath)
+            db.session.add(plant_image)
+            db.session.commit()
+            logger.info(f'Image associated with plant {plant_id}: {filepath}')
+        except Exception as e:
+            logger.error(f'Failed to save image to database: {e}')
+            db.session.rollback()
+
+    return filepath
 
 
 def droidcam_capture_image(ip, port):
@@ -90,13 +113,19 @@ def picam_capture_image(awb_mode):
     Returns:
         str or None: Path to saved image file or None on failure
     """
+    # Check if Picamera2 is available
+    if Picamera2 is None:
+        logger.error("PiCamera2 not available")
+        return None
+
     picam = None
     try:
         # Initialize Picamera2 object
         picam = Picamera2()
 
         # Configure the camera for still image capture with default settings
-        picam.configure(picam.create_still_configuration())
+        config = picam.create_still_configuration()
+        picam.configure(config)
 
         # Set Auto White Balance mode control
         picam.set_controls({'AwbMode': awb_mode})
@@ -117,21 +146,27 @@ def picam_capture_image(awb_mode):
             except Exception as e:
                 logger.error(f"Error capturing image (attempt {attempt+1}): {e}")
                 time.sleep(1)
-        logger.info(f'Image captured and saved to {filepath}')
+        else:
+            # If all attempts failed
+            return None
 
+        logger.info(f'Image captured and saved to {filepath}')
         return filepath
-    except IndexError: 
-        logger.error("Error capturing image: No camera found. Is it connected?")
-        return None
+
     except Exception as e:
         # Log any error during capture
         logger.error(f'Error capturing image: {e}')
         return None
-    # Stop and release camera resources
-    finally: 
-        if picam: 
+
+    finally:
+        # Stop and release camera resources
+        if picam:
             try:
                 picam.stop()
+            except Exception:
+                pass
+            try:
+                picam.close()
             except Exception:
                 pass
             try:

@@ -12,36 +12,46 @@
 <div class="row justify-content-center mb-5">
   <div class="col-md-10">
     <div class="card p-4">
-      {% if images %}
+      {% if plant_images %}
         <div class="row g-4">
-          <!-- Loop through available images -->
-          {% for image in images if image.endswith('.jpg') %}
+          {% for plant_image in plant_images %}
           <div class="col-sm-6 col-md-4 col-lg-3">
             <div class="card h-100 shadow-sm">
               <!-- Image preview -->
-              <img 
-                src="{{ url_for('static', filename='images/' ~ image) }}" 
+              <img
+                src="{{ url_for('static', filename=plant_image.image_path[7:]) }}"
                 class="card-img-top img-fluid"
-                alt="Captured image {{ loop.index }}"
+                alt="Captured image of {{ plant_image.plant.name }}"
                 loading="lazy"
               >
 
-              <!-- Footer with filename and delete button -->
-              <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center">
-                <p class="mb-0 text-truncate" title="{{ image }}">{{ image }}</p>
-                <form 
-                  action="{{ url_for('remove_picture', filename='images/' ~ image) }}" 
-                  method="POST" 
-                  style="margin:0;"
-                >
-                  <button 
-                    type="submit" 
-                    class="btn btn-sm custom-btn-danger"
-                    title="Delete this image"
+              <!-- Footer with plant name, filename, timestamp and delete button -->
+              <div class="card-footer bg-transparent border-0">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <div class="flex-grow-1">
+                    <strong class="text-dark">{{ plant_image.plant.name }}</strong>
+                    {% if plant_image.plant.location %}
+                      <br><small class="text-muted">{{ plant_image.plant.location }}</small>
+                    {% endif %}
+                  </div>
+                  <form
+                    action="{{ url_for('remove_picture', filename=plant_image.image_path) }}"
+                    method="POST"
+                    style="margin:0;"
                   >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </form>
+                    <button
+                      type="submit"
+                      class="btn btn-sm custom-btn-danger"
+                      title="Delete this image"
+                    >
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">{{ plant_image.image_path.split('/')[-1] }}</small>
+                  <small class="text-muted">{{ plant_image.captured_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                </div>
               </div>
             </div>
           </div>

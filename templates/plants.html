@@ -8,43 +8,77 @@
   <h1 class="display-5">Plants</h1>
 </div>
 
-<!-- Card with collection of all plants inside database -->
+<!-- Plants grid -->
 <div class="row justify-content-center mb-5">
   <div class="col-md-10">
     <div class="card p-4">
-      <div class="row">
-        {% for plant in plants %}
-        <div class="col-6 col-md-3 col-lg-2 mb-4">
-          <div class="card h-100 shadow-sm">
-            <div class="card-body d-flex flex-column text-center">
-              <h5 class="card-title fw-semibold mb-2">{{ plant.name }}</h5>
-              <p class="card-text text-muted mb-3">
-                {{ plant.location if plant.location else 'Unknown location' }}
-              </p>
-            </div>
+      {% if plants %}
+        <div class="row g-4">
+          {% for plant in plants %}
+          <div class="col-sm-6 col-md-4 col-lg-3">
+            <div class="card h-100 shadow-sm">
+              <!-- Plant image -->
+              {% if plant.images %}
+                {% set latest_image = plant.images|sort(attribute='captured_at', reverse=True)|first %}
+                <img
+                  src="{{ url_for('static', filename=latest_image.image_path[7:]) }}"
+                  class="card-img-top img-fluid"
+                  alt="Latest image of {{ plant.name }}"
+                  loading="lazy"
+                  style="height: 150px; object-fit: cover;"
+                >
+              {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 150px;">
+                  <i class="bi bi-image text-muted" style="font-size: 2rem;"></i>
+                </div>
+              {% endif %}
 
-            <div class="card-footer bg-transparent border-0 d-flex justify-content-between align-items-center">
-              <!-- Edit button (left) -->
-              <a href="{{ url_for('edit_plant', plant_id=plant.id) }}" class="btn btn-secondary btn-sm"><i class="bi bi-pencil-square"></i></a>
-
-              <!-- Delete button (right) -->
-              <form action="{{ url_for('delete_plant', plant_id=plant.id) }}" method="POST" class="m-0">
-                <button type="submit" class="btn custom-btn-danger btn-sm"><i class="bi bi-trash"></i></button>
-              </form>
+              <!-- Footer with plant info and action buttons -->
+              <div class="card-footer bg-transparent border-0">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                  <div class="flex-grow-1">
+                    <strong class="text-dark">{{ plant.name }}</strong>
+                    {% if plant.location %}
+                      <br><small class="text-muted">{{ plant.location }}</small>
+                    {% endif %}
+                  </div>
+                  <a href="{{ url_for('edit_plant', plant_id=plant.id) }}" class="btn btn-secondary btn-sm" title="Edit plant">
+                    <i class="bi bi-pencil-square"></i>
+                  </a>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <small class="text-muted">{{ plant.images|length }} image{{ 's' if plant.images|length != 1 else '' }}</small>
+                  <small class="text-muted">Added {{ plant.created_at.strftime('%Y-%m-%d') }}</small>
+                </div>
+                <div class="d-flex gap-2">
+                  <a href="{{ url_for('capture', plant_id=plant.id) }}" class="btn btn-success btn-sm flex-fill">
+                    <i class="bi bi-camera"></i> Capture
+                  </a>
+                  <form action="{{ url_for('delete_plant', plant_id=plant.id) }}" method="POST" class="flex-fill">
+                    <button type="submit" class="btn custom-btn-danger btn-sm w-100" title="Delete plant">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           </div>
+          {% endfor %}
         </div>
-        {% else %}
-        <div class="col-12 text-center">
-          <p class="text-muted mb-4">No plants found. Add a new plant to get started.</p>
+      {% else %}
+        <!-- No plants fallback -->
+        <div class="text-center py-4">
+          <i class="bi bi-flower1 text-muted" style="font-size: 3rem;"></i>
+          <p class="text-muted mb-3">No plants found. Add your first plant to get started.</p>
         </div>
-        {% endfor %}
-      </div>
+      {% endif %}
+    </div>
 
-      <!-- Add new plant button -->
-      <div class="text-center mt-3">
-        <a href="{{ url_for('add_plant') }}" class="btn custom-btn"><i class="bi bi-plus-circle me-1"></i>New Plant</a>
-      </div>
+    <!-- Add new plant button -->
+    <div class="text-center mt-4">
+      <a href="{{ url_for('add_plant') }}" class="btn custom-btn">
+        <i class="bi bi-plus-circle me-1"></i>New Plant
+      </a>
     </div>
   </div>
 </div>

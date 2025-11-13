@@ -9,7 +9,7 @@ from background_capture import start_background_thread, stop_background_thread, 
 from external_access import start_cloudflare_quick_tunnel
 from extensions import db
 from flask_migrate import Migrate
-from models import Plant
+from models import Plant, PlantImage
 import os
 import threading
 
@@ -151,12 +151,23 @@ def index():
 
 @app.route('/capture')
 def capture():
+    plant_id = request.args.get('plant_id', type=int)
     try:
-        capture_image(app.config['SETTINGS'])
-        flash("Image captured successfully!", "success")
+        filepath = capture_image(app.config['SETTINGS'], plant_id=plant_id)
+        if filepath:
+            if plant_id:
+                flash(f"Image captured and associated with plant!", "success")
+            else:
+                flash("Image captured successfully!", "success")
+        else:
+            flash("Failed to capture image.", "error")
     except Exception as e:
         logger.exception("Image capture failed")
         flash("Failed to capture image.", "error")
+
+    # Redirect back to plant page if plant_id was provided, otherwise to index
+    if plant_id:
+        return redirect(url_for('plants'))
     return redirect(url_for('index'))
 
 @app.route('/toggle_background_capture', methods=['POST'])
@@ -178,10 +189,30 @@ def latest_image():
 # --- Gallery ---
 @app.route('/gallery')
 def gallery():
-    return render_template('gallery.html', active_page='gallery', images=get_all_images())
+    try:
+        # Get all plant images with plant information
+        plant_images = PlantImage.query.join(Plant).order_by(PlantImage.captured_at.desc()).all()
+        return render_template('gallery.html', active_page='gallery', plant_images=plant_images)
+    except Exception as e:
+        logger.exception("Failed to load gallery")
+        flash("Failed to load gallery.", "error")
+        return redirect(url_for('index'))
 
 @app.route('/remove_picture/<path:filename>', methods=['POST'])
 def remove_picture(filename):
+    # Remove from database first
+    try:
+        from models import PlantImage
+        plant_image = PlantImage.query.filter_by(image_path=filename).first()
+        if plant_image:
+            db.session.delete(plant_image)
+            db.session.commit()
+    except Exception as e:
+        logger.exception("Failed to remove image from database")
+        flash("Failed to delete image from database.", "error")
+        return redirect(url_for('gallery'))
+
+    # Remove the file
     remove_image(filename)
     return redirect(url_for('gallery'))
 

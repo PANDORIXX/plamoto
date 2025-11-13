@@ -4,6 +4,7 @@
 - **Install dependencies**: `pip install -r requirements.txt`
 - **Run app**: `flask run`
 - **Database setup**: `./db_setup.sh` (runs migrations)
+- **Create sample data**: `python3 create_sample_data.py` (creates example plants with placeholder images)
 - **Linting**: No linter configured; consider `ruff check .` or `flake8 .`
 - **Formatting**: No formatter configured; consider `black .` or `ruff format .`
 - **Tests**: No tests present; run `pytest` to execute. For single test: `pytest path/to/test_file.py::test_function`
@@ -18,6 +19,7 @@
 - **Docstrings**: Use triple quotes for module/function descriptions. Keep concise.
 - **Comments**: Add comments for complex logic, avoid obvious ones. No inline comments unless necessary.
 - **Flask Specifics**: Use `app.logger` for logging, follow RESTful route naming. Handle DB commits with `safe_commit()`.
+- **Database**: Use SQLAlchemy relationships for data integrity. PlantImage model links images to plants.
 - **Security**: Never log secrets/keys. Use environment variables for sensitive data.
 - **Commits**: Use imperative mood, e.g., "Add feature" not "Added feature". Reference issues if applicable.</content>
 <parameter name="filePath">AGENTS.md

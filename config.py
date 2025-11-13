@@ -25,5 +25,5 @@ class Config:
 
     # General settings
     BACKGROUND_CAPTURE_MIN_INTERVAL = 1
-    DEBUG = False
-    CLOUDFLARE_ENABLED = True
+    DEBUG = True
+    CLOUDFLARE_ENABLED = False
