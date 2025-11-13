@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask, render_template, redirect, url_for, request, jsonify, flash
 from camera import capture_image, picam_unavailability_logging, Picamera2
 from settings import load_settings, save_settings, get_interval_minutes_from_settings, parse_form_settings

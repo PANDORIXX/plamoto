@@ -10,6 +10,7 @@
 
 ## Code Style Guidelines
 - **Imports**: Group as standard library, third-party, local. Separate groups with blank lines. Use `import numpy as np` for common aliases.
+- **Environment**: Use python-dotenv to load .env files at app startup with `load_dotenv()`
 - **Formatting**: 4 spaces indentation, line length ~88 chars. Use trailing commas in multi-line structures.
 - **Types**: Add type hints to function parameters and returns where beneficial (e.g., `def func(x: int) -> str:`).
 - **Naming**: snake_case for functions/variables/constants, PascalCase for classes. Use descriptive names.
